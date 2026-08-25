@@ -1,0 +1,11897 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Unreachable Destination OD Flow Map
+    </title>
+
+
+    <!-- deck.gl -->
+    <script
+        src="https://unpkg.com/deck.gl@^9.0.0/dist.min.js">
+    </script>
+
+
+    <!-- MapLibre -->
+    <script
+        src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js">
+    </script>
+
+    <link
+        href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="icon"
+        href="data:,"
+    >
+
+
+    <style>
+
+        html,
+        body {
+
+            width: 100%;
+            height: 100%;
+
+            margin: 0;
+            padding: 0;
+
+            overflow: hidden;
+
+            background: #d8dce0;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+        }
+
+
+        #map {
+
+            position: absolute;
+
+            top: 0;
+            left: 0;
+
+            width: 100vw;
+            height: 100vh;
+
+        }
+
+
+        /* ==================================================
+           CONTROL PANEL
+           ================================================== */
+
+        #control-panel {
+
+            position: absolute;
+
+            top: 20px;
+            left: 20px;
+
+            width: 340px;
+
+            max-height:
+                calc(100vh - 70px);
+
+            overflow-y: auto;
+
+            padding: 18px;
+
+            background:
+                rgba(
+                    12,
+                    15,
+                    20,
+                    0.92
+                );
+
+            border:
+                1px solid
+                rgba(
+                    220,
+                    220,
+                    220,
+                    0.10
+                );
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 8px 26px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.42
+                );
+
+            backdrop-filter:
+                blur(6px);
+
+            z-index: 1000;
+
+        }
+
+
+        #control-panel::-webkit-scrollbar {
+
+            width: 6px;
+
+        }
+
+
+        #control-panel::-webkit-scrollbar-track {
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.02
+                );
+
+        }
+
+
+        #control-panel::-webkit-scrollbar-thumb {
+
+            background:
+                rgba(
+                    180,
+                    185,
+                    190,
+                    0.20
+                );
+
+            border-radius: 6px;
+
+        }
+
+
+        /* ==================================================
+           TITLE
+           ================================================== */
+
+        #title {
+
+            margin-bottom: 10px;
+
+            font-size: 18px;
+
+            font-weight: 600;
+
+            line-height: 1.3;
+
+            color: #edf1f4;
+
+        }
+
+
+        /* ==================================================
+           DESCRIPTION
+           ================================================== */
+
+        #description {
+
+            margin-bottom: 18px;
+
+            font-size: 12px;
+
+            line-height: 1.58;
+
+            color: #a6afb7;
+
+        }
+
+
+        .origin-text {
+
+            color:
+                rgb(
+                    255,
+                    232,
+                    180
+                );
+
+            font-weight: 600;
+
+        }
+
+
+        .destination-text {
+
+            color:
+                rgb(
+                    255,
+                    138,
+                    108
+                );
+
+            font-weight: 600;
+
+        }
+
+
+        /* ==================================================
+           FILTER SECTIONS
+           ================================================== */
+
+        .filter-section {
+
+            margin-top: 15px;
+
+            padding: 14px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.025
+                );
+
+            border:
+                1px solid
+                rgba(
+                    180,
+                    190,
+                    200,
+                    0.10
+                );
+
+            border-radius: 7px;
+
+        }
+
+
+        #od-section {
+
+            border-left:
+                2px solid
+                rgba(
+                    255,
+                    205,
+                    120,
+                    0.68
+                );
+
+        }
+
+
+        #demographic-section {
+
+            border-left:
+                2px solid
+                rgba(
+                    120,
+                    175,
+                    220,
+                    0.68
+                );
+
+        }
+
+
+        .filter-section-title {
+
+            margin-bottom: 8px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.6px;
+
+            text-transform: uppercase;
+
+            color: #dce1e5;
+
+        }
+
+
+        .filter-section-description {
+
+            margin-bottom: 12px;
+
+            font-size: 10px;
+
+            line-height: 1.45;
+
+            color: #707b84;
+
+        }
+
+
+        .filter-group {
+
+            margin-bottom: 12px;
+
+        }
+
+
+        .filter-group:last-child {
+
+            margin-bottom: 0;
+
+        }
+
+
+        #control-panel label {
+
+            display: block;
+
+            margin-bottom: 6px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            color: #d6dbe0;
+
+        }
+
+
+        /* ==================================================
+           SELECT
+           ================================================== */
+
+        select {
+
+            width: 100%;
+
+            height: 38px;
+
+            padding:
+                5px 8px;
+
+            font-size: 12px;
+
+            color: #e3e7ea;
+
+            background:
+                rgba(
+                    27,
+                    31,
+                    36,
+                    0.98
+                );
+
+            border:
+                1px solid
+                rgba(
+                    165,
+                    170,
+                    175,
+                    0.20
+                );
+
+            border-radius: 6px;
+
+            outline: none;
+
+        }
+
+
+        #countyFilter:focus,
+        #destinationFilter:focus {
+
+            border-color:
+                rgba(
+                    255,
+                    214,
+                    140,
+                    0.60
+                );
+
+        }
+
+
+        #ageFilter:focus,
+        #disabilityFilter:focus,
+        #incomeFilter:focus,
+        #raceFilter:focus,
+        #viewMode:focus {
+
+            border-color:
+                rgba(
+                    130,
+                    185,
+                    225,
+                    0.62
+                );
+
+        }
+
+
+        select option {
+
+            background: #1b2025;
+
+            color: #e3e7ea;
+
+        }
+
+
+        #userGuideButton {
+
+            width: 100%;
+
+            margin:
+                0 0 18px;
+
+            padding:
+                9px 10px;
+
+            color: #f8f0dc;
+
+            background:
+                rgba(
+                    72,
+                    48,
+                    22,
+                    0.68
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    176,
+                    35,
+                    0.58
+                );
+
+            border-radius: 6px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+        }
+
+
+        #userGuideButton:hover {
+
+            background:
+                rgba(
+                    92,
+                    61,
+                    28,
+                    0.82
+                );
+
+        }
+
+
+        #user-guide-backdrop {
+
+            position: fixed;
+
+            inset: 0;
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 24px;
+
+            background:
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.64
+                );
+
+            z-index: 3000;
+
+        }
+
+
+        #user-guide-backdrop.is-open {
+
+            display: flex;
+
+        }
+
+
+        #user-guide-modal {
+
+            position: relative;
+
+            width: min(760px, 94vw);
+
+            height: min(760px, 88vh);
+
+            overflow: hidden;
+
+            background: #11151a;
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.16
+                );
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 18px 60px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.62
+                );
+
+        }
+
+
+        #user-guide-frame {
+
+            width: 100%;
+
+            height: 100%;
+
+            border: 0;
+
+        }
+
+
+        #user-guide-close {
+
+            position: absolute;
+
+            top: 10px;
+            right: 10px;
+
+            width: 34px;
+            height: 34px;
+
+            color: #ffffff;
+
+            background:
+                rgba(
+                    15,
+                    18,
+                    22,
+                    0.86
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.18
+                );
+
+            border-radius: 50%;
+
+            font-size: 20px;
+
+            line-height: 1;
+
+            cursor: pointer;
+
+        }
+
+
+        #clearMapSelection {
+
+            width: 100%;
+
+            height: 34px;
+
+            margin-top: 2px;
+
+            color: #e7ecef;
+
+            background:
+                rgba(
+                    38,
+                    43,
+                    49,
+                    0.95
+                );
+
+            border:
+                1px solid
+                rgba(
+                    180,
+                    185,
+                    190,
+                    0.24
+                );
+
+            border-radius: 6px;
+
+            cursor: pointer;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+        }
+
+
+        #clearMapSelection:hover {
+
+            background:
+                rgba(
+                    56,
+                    61,
+                    68,
+                    0.98
+                );
+
+        }
+
+
+        #location-filter-group {
+
+            display: none;
+
+        }
+
+
+        #destination-region-panel {
+
+            position: absolute;
+
+            top: 20px;
+            right: 20px;
+
+            width: 285px;
+
+            padding: 14px;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(
+                        24,
+                        28,
+                        33,
+                        0.96
+                    ),
+                    rgba(
+                        15,
+                        18,
+                        22,
+                        0.94
+                    )
+                );
+
+            border:
+                1px solid
+                rgba(
+                    220,
+                    220,
+                    220,
+                    0.10
+                );
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 8px 24px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.34
+                );
+
+            backdrop-filter:
+                blur(6px);
+
+            z-index: 1000;
+
+        }
+
+
+        #destination-region-panel > label {
+
+            display: block;
+
+            margin-bottom: 9px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            color: #d6dbe0;
+
+        }
+
+
+        .radio-group {
+
+            display: grid;
+
+            gap: 8px;
+
+        }
+
+
+        .radio-option {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            min-height: 32px;
+
+            padding:
+                7px 9px;
+
+            color: #e3e7ea;
+
+            background:
+                rgba(
+                    22,
+                    26,
+                    31,
+                    0.82
+                );
+
+            border:
+                1px solid
+                rgba(
+                    165,
+                    170,
+                    175,
+                    0.16
+                );
+
+            border-radius: 6px;
+
+            font-size: 12px;
+
+            cursor: pointer;
+
+        }
+
+
+        .radio-option input {
+
+            margin: 0;
+
+            accent-color: #ffb023;
+
+        }
+
+
+        .radio-option:hover {
+
+            background:
+                rgba(
+                    36,
+                    41,
+                    47,
+                    0.90
+                );
+
+        }
+
+
+        .radio-option:has(input:checked) {
+
+            border-color:
+                rgba(
+                    255,
+                    176,
+                    35,
+                    0.68
+                );
+
+            background:
+                rgba(
+                    72,
+                    48,
+                    22,
+                    0.70
+                );
+
+        }
+
+
+        #top-destinations-panel {
+
+            margin-top: 13px;
+
+            padding: 12px;
+
+            background:
+                rgba(
+                    10,
+                    13,
+                    17,
+                    0.42
+                );
+
+            border:
+                1px solid
+                rgba(
+                    190,
+                    200,
+                    210,
+                    0.12
+                );
+
+            border-radius: 8px;
+
+        }
+
+
+        .top-destinations-title {
+
+            color: #e4e8eb;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+        }
+
+
+        .top-destinations-subtitle {
+
+            margin-top: 3px;
+            margin-bottom: 11px;
+
+            color: #aab2b9;
+
+            font-size: 10.5px;
+
+            line-height: 1.35;
+
+        }
+
+
+        .top-destinations-chart {
+
+            display: grid;
+
+            gap: 8px;
+
+            max-height: 390px;
+
+            overflow-y: auto;
+
+            padding-right: 5px;
+
+        }
+
+
+        .top-destinations-chart::-webkit-scrollbar {
+
+            width: 6px;
+
+        }
+
+
+        .top-destinations-chart::-webkit-scrollbar-track {
+
+            background:
+                rgba(
+                    210,
+                    216,
+                    222,
+                    0.08
+                );
+
+            border-radius: 999px;
+
+        }
+
+
+        .top-destinations-chart::-webkit-scrollbar-thumb {
+
+            background:
+                rgba(
+                    255,
+                    176,
+                    35,
+                    0.55
+                );
+
+            border-radius: 999px;
+
+        }
+
+
+        .top-destination-row {
+
+            display: grid;
+
+            grid-template-columns: minmax(0, 1fr) auto;
+
+            gap: 8px;
+
+            align-items: center;
+
+            padding: 7px 8px;
+
+            background:
+                rgba(
+                    31,
+                    36,
+                    42,
+                    0.62
+                );
+
+            border:
+                1px solid
+                rgba(
+                    210,
+                    216,
+                    222,
+                    0.08
+                );
+
+            border-radius: 6px;
+
+            cursor: pointer;
+
+            transition:
+                background 120ms ease,
+                border-color 120ms ease,
+                transform 120ms ease;
+
+        }
+
+
+        .top-destination-row:hover {
+
+            background:
+                rgba(
+                    44,
+                    50,
+                    58,
+                    0.78
+                );
+
+            border-color:
+                rgba(
+                    255,
+                    176,
+                    35,
+                    0.38
+                );
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        .top-destination-row.is-selected {
+
+            background:
+                rgba(
+                    72,
+                    48,
+                    22,
+                    0.70
+                );
+
+            border-color:
+                rgba(
+                    255,
+                    176,
+                    35,
+                    0.78
+                );
+
+        }
+
+
+        .top-destination-name {
+
+            overflow: hidden;
+
+            color: #d4d9dd;
+
+            font-size: 11.5px;
+
+            font-weight: 600;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+        }
+
+
+        .top-destination-value {
+
+            color:
+                rgb(
+                    255,
+                    220,
+                    160
+                );
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+        }
+
+
+        .top-destination-bar-track {
+
+            grid-column: 1 / -1;
+
+            height: 7px;
+
+            overflow: hidden;
+
+            background:
+                rgba(
+                    210,
+                    216,
+                    222,
+                    0.11
+                );
+
+            border-radius: 999px;
+
+        }
+
+
+        .top-destination-bar {
+
+            height: 100%;
+
+            min-width: 3px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(
+                        255,
+                        176,
+                        35,
+                        0.85
+                    ),
+                    rgba(
+                        246,
+                        74,
+                        45,
+                        0.95
+                    )
+                );
+
+            border-radius: 999px;
+
+        }
+
+
+        .top-destinations-empty {
+
+            color: #aab2b9;
+
+            font-size: 11px;
+
+            line-height: 1.4;
+
+        }
+
+
+        .advanced-filters {
+
+            margin-top: 12px;
+
+            border-top:
+                1px solid
+                rgba(
+                    190,
+                    200,
+                    210,
+                    0.10
+                );
+
+        }
+
+
+        .advanced-filters summary {
+
+            padding-top: 12px;
+
+            cursor: pointer;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            color: #d6dbe0;
+
+        }
+
+
+        .advanced-filters[open] summary {
+
+            margin-bottom: 12px;
+
+        }
+
+
+        /* ==================================================
+           SUMMARY
+           ================================================== */
+
+        #summary {
+
+            margin-top: 16px;
+
+            padding-top: 13px;
+
+            border-top:
+                1px solid
+                rgba(
+                    190,
+                    200,
+                    210,
+                    0.10
+                );
+
+            font-size: 12px;
+
+            line-height: 1.65;
+
+            color: #aab2b9;
+
+        }
+
+
+        #summary b {
+
+            color: #e4e8eb;
+
+        }
+
+
+        .destination-ranking {
+
+            margin-top: 12px;
+
+        }
+
+
+        .destination-ranking-title {
+
+            margin-bottom: 6px;
+
+            color: #e4e8eb;
+
+            font-weight: 700;
+
+        }
+
+
+        .destination-ranking-list {
+
+            max-height: 220px;
+
+            overflow-y: auto;
+
+            padding-right: 4px;
+
+        }
+
+
+        .destination-ranking-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            padding: 3px 0;
+
+            border-bottom:
+                1px solid
+                rgba(
+                    190,
+                    200,
+                    210,
+                    0.08
+                );
+
+        }
+
+
+        .destination-ranking-name {
+
+            color: #d4d9dd;
+
+        }
+
+
+        .destination-ranking-value {
+
+            flex: 0 0 auto;
+
+            color:
+                rgb(
+                    255,
+                    220,
+                    160
+                );
+
+            font-weight: 700;
+
+        }
+
+
+        .active-od {
+
+            color:
+                rgb(
+                    255,
+                    220,
+                    160
+                );
+
+        }
+
+
+        .active-demo {
+
+            color:
+                rgb(
+                    145,
+                    195,
+                    230
+                );
+
+        }
+
+
+        /* ==================================================
+           LEGEND
+           ================================================== */
+
+        #legend {
+
+            position: absolute;
+
+            right: 20px;
+            bottom: 20px;
+
+            width: 285px;
+
+            padding: 13px;
+
+            background:
+                rgba(
+                    12,
+                    15,
+                    20,
+                    0.90
+                );
+
+            border:
+                1px solid
+                rgba(
+                    220,
+                    220,
+                    220,
+                    0.10
+                );
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 8px 24px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.34
+                );
+
+            backdrop-filter:
+                blur(6px);
+
+            font-size: 12px;
+
+            line-height: 1.9;
+
+            color: #a1a9b0;
+
+            z-index: 1000;
+
+        }
+
+
+        #legend-title {
+
+            margin-bottom: 4px;
+
+            font-weight: 600;
+
+            color: #dde2e6;
+
+        }
+
+
+        .legend-row {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+        }
+
+
+        .legend-line {
+
+            width: 31px;
+
+            flex-shrink: 0;
+
+        }
+
+
+        .legend-county {
+
+            border-top:
+                1px solid
+                rgba(
+                    120,
+                    130,
+                    140,
+                    0.55
+                );
+
+        }
+
+
+        .legend-zip {
+
+            border-top:
+                1px solid
+                rgba(
+                    95,
+                    105,
+                    115,
+                    0.34
+                );
+
+        }
+
+
+        .legend-arc {
+
+            height: 2px;
+
+            border-radius: 2px;
+
+            background:
+                linear-gradient(
+                    to right,
+                    rgb(
+                        255,
+                        232,
+                        180
+                    ),
+                    rgb(
+                        255,
+                        192,
+                        105
+                    ),
+                    rgb(
+                        255,
+                        138,
+                        108
+                    )
+                );
+
+        }
+
+
+        .legend-fill {
+
+            width: 31px;
+
+            height: 13px;
+
+            border-radius: 3px;
+
+            background:
+                linear-gradient(
+                    to right,
+                    rgba(
+                        250,
+                        181,
+                        86,
+                        0.30
+                    ),
+                    rgba(
+                        207,
+                        27,
+                        27,
+                        0.88
+                    )
+                );
+
+        }
+
+
+        .legend-bubble {
+
+            width: 16px;
+
+            height: 16px;
+
+            margin-left: 7px;
+
+            margin-right: 8px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(
+                    220,
+                    42,
+                    39,
+                    0.82
+                );
+
+            border:
+                1px solid
+                rgba(
+                    225,
+                    255,
+                    255,
+                    0.95
+                );
+
+        }
+
+
+        .legend-location {
+
+            width: 17px;
+
+            height: 17px;
+
+            margin-left: 6px;
+
+            margin-right: 8px;
+
+            border-radius: 50%;
+
+            box-sizing: border-box;
+
+            flex-shrink: 0;
+
+        }
+
+
+        .legend-location-total {
+
+            background:
+                rgba(
+                    230,
+                    35,
+                    45,
+                    0.95
+                );
+
+            border:
+                1px solid
+                rgba(
+                    128,
+                    0,
+                    24,
+                    0.95
+                );
+
+        }
+
+
+        .legend-location-outgoing {
+
+            background:
+                rgba(
+                    230,
+                    35,
+                    45,
+                    0.34
+                );
+
+            border:
+                4px solid
+                rgba(
+                    255,
+                    176,
+                    35,
+                    0.98
+                );
+
+        }
+
+
+        .legend-location-incoming {
+
+            background:
+                rgba(
+                    230,
+                    35,
+                    45,
+                    0.34
+                );
+
+            border:
+                3px solid
+                rgba(
+                    92,
+                    0,
+                    12,
+                    0.98
+                );
+
+        }
+
+
+        #status {
+
+            margin-top: 10px;
+
+            font-size: 10px;
+
+            line-height: 1.4;
+
+            color: #66717a;
+
+        }
+
+
+        #map-selection-popup {
+
+            position: absolute;
+
+            display: none;
+
+            min-width: 165px;
+
+            max-width: 265px;
+
+            padding: 10px 11px;
+
+            color: #e8f0f3;
+
+            background:
+                rgba(
+                    34,
+                    61,
+                    73,
+                    0.96
+                );
+
+            border-radius: 5px;
+
+            box-shadow:
+                0 5px 16px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.30
+                );
+
+            font-size: 11px;
+
+            line-height: 1.45;
+
+            z-index: 1100;
+
+            pointer-events: auto;
+
+            cursor: pointer;
+
+        }
+
+
+        #map-selection-popup::after {
+
+            content: "";
+
+            position: absolute;
+
+            left: 50%;
+
+            bottom: -7px;
+
+            margin-left: -7px;
+
+            border-left:
+                7px solid transparent;
+
+            border-right:
+                7px solid transparent;
+
+            border-top:
+                7px solid
+                rgba(
+                    34,
+                    61,
+                    73,
+                    0.96
+                );
+
+        }
+
+
+        .popup-title {
+
+            margin-bottom: 8px;
+
+            font-weight: 700;
+
+            color: #ffffff;
+
+        }
+
+
+        .popup-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 18px;
+
+            white-space: nowrap;
+
+        }
+
+
+        .popup-value {
+
+            font-weight: 700;
+
+            color: #ffffff;
+
+        }
+
+
+        .popup-row-stacked {
+
+            display: block;
+
+            white-space: normal;
+
+        }
+
+
+        .popup-row-stacked .popup-value {
+
+            display: block;
+
+            margin-top: 2px;
+
+            overflow-wrap: anywhere;
+
+        }
+
+
+        .popup-hint {
+
+            margin-top: 7px;
+
+            color:
+                rgba(
+                    230,
+                    238,
+                    242,
+                    0.62
+                );
+
+            font-size: 10px;
+
+        }
+
+
+        @media (max-width: 720px) {
+
+            #control-panel {
+
+                top: 12px;
+                left: 12px;
+                right: 12px;
+
+                width: auto;
+
+                max-height:
+                    calc(100vh - 190px);
+
+            }
+
+
+            #destination-region-panel {
+
+                top: auto;
+                left: 12px;
+                right: 12px;
+                bottom: 170px;
+
+                width: auto;
+
+            }
+
+
+            #legend {
+
+                left: 12px;
+                right: 12px;
+                bottom: 12px;
+
+                width: auto;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+
+<body>
+
+
+    <div id="map"></div>
+
+
+    <div id="map-selection-popup"></div>
+
+
+    <div
+        id="user-guide-backdrop"
+        aria-hidden="true"
+    >
+
+        <div
+            id="user-guide-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="User Guide"
+        >
+
+            <button
+                id="user-guide-close"
+                type="button"
+                aria-label="Close user guide"
+            >
+                &times;
+            </button>
+
+            <iframe
+                id="user-guide-frame"
+                title="User Guide"
+                src="user-guide.html"
+            ></iframe>
+
+        </div>
+
+    </div>
+
+
+    <div id="destination-region-panel">
+
+        <label>
+
+            Destination Region
+
+        </label>
+
+
+        <div
+            class="radio-group"
+            id="destinationRegionFilter"
+        >
+
+            <label class="radio-option">
+
+                <input
+                    type="radio"
+                    name="destinationRegion"
+                    value="ALL"
+                    checked
+                >
+
+                All Destinations
+
+            </label>
+
+
+            <label class="radio-option">
+
+                <input
+                    type="radio"
+                    name="destinationRegion"
+                    value="INSIDE"
+                >
+
+                Inside 13 counties
+
+            </label>
+
+
+            <label class="radio-option">
+
+                <input
+                    type="radio"
+                    name="destinationRegion"
+                    value="OUTSIDE"
+                >
+
+                Outside 13 counties
+
+            </label>
+
+        </div>
+
+
+        <div id="top-destinations-panel">
+
+            <div class="top-destinations-title">
+
+                Top Destinations
+
+            </div>
+
+            <div class="top-destinations-subtitle">
+
+                Survey-reported unmet transit needs by destination
+
+            </div>
+
+            <div
+                class="top-destinations-chart"
+                id="topDestinationsChart"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         LEGEND
+         ================================================== -->
+
+    <div id="legend">
+
+
+        <div id="legend-title">
+
+            Location Flow Totals
+
+        </div>
+
+
+        <div class="legend-row">
+
+            <div class="legend-location legend-location-total">
+            </div>
+
+            <div>
+                Total needs
+            </div>
+
+        </div>
+
+
+        <div class="legend-row">
+
+            <div class="legend-location legend-location-outgoing">
+            </div>
+
+            <div>
+                From this location
+            </div>
+
+        </div>
+
+
+        <div class="legend-row">
+
+            <div
+                class="legend-location legend-location-incoming">
+            </div>
+
+            <div>
+                To this location
+            </div>
+
+        </div>
+
+
+        <div class="legend-row">
+
+            <div
+                class="legend-line legend-arc">
+            </div>
+
+            <div>
+                OD connection
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <div id="control-panel">
+
+
+        <!-- ==================================================
+             TITLE
+             ================================================== -->
+
+        <div id="title">
+
+            Unreachable Destination OD Flow
+
+        </div>
+
+
+
+        <!-- ==================================================
+             DESCRIPTION
+             ================================================== -->
+
+        <div id="description">
+
+            This map summarizes survey-reported destination
+            accessibility gaps. County color and destination
+            bubbles show aggregate survey mentions; detailed
+            OD flows are available as a focused view.
+
+        </div>
+
+
+        <button
+            id="userGuideButton"
+            type="button"
+        >
+
+            User Guide
+
+        </button>
+
+
+
+        <!-- ==================================================
+             BLOCK 1 — ORIGIN DESTINATION
+             ================================================== -->
+
+        <div
+            class="filter-section"
+            id="od-section"
+        >
+
+
+            <div class="filter-section-title">
+
+                Origin–Destination Filters
+
+            </div>
+
+
+            <div class="filter-section-description">
+
+                Start with aggregate patterns, then switch to
+                detailed flows when a county or destination needs
+                closer inspection.
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="viewMode">
+
+                    Map View
+
+                </label>
+
+
+                <select id="viewMode">
+
+                    <option value="county">
+
+                        County Summary
+
+                    </option>
+
+                    <option value="zip">
+
+                        ZIP Summary
+
+                    </option>
+
+                    <option value="destination">
+
+                        Destination Summary
+
+                    </option>
+
+                    <option
+                        value="flows"
+                        selected
+                    >
+
+                        Flowmap
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="countyFilter">
+
+                    Origin County
+
+                </label>
+
+
+                <select id="countyFilter">
+
+                    <option value="ALL">
+
+                        All Counties
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="destinationFilter">
+
+                    Destination
+
+                </label>
+
+
+                <select id="destinationFilter">
+
+                    <option value="ALL">
+
+                        All Destinations
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                class="filter-group"
+                id="location-filter-group"
+            >
+
+                <label for="locationFilter">
+
+                    Location
+
+                </label>
+
+
+                <select id="locationFilter">
+
+                    <option value="ALL">
+
+                        All Locations
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                id="clearMapSelection"
+                type="button"
+            >
+
+                Clear Map Selection
+
+            </button>
+
+
+        </div>
+
+
+
+        <!-- ==================================================
+             BLOCK 2 — DEMOGRAPHICS
+             ================================================== -->
+
+        <details
+            class="filter-section advanced-filters"
+            id="demographic-section"
+        >
+
+
+            <summary>
+
+                Advanced Demographic Filters
+
+            </summary>
+
+
+            <div class="filter-section-description">
+
+                Explore reported accessibility gaps by
+                demographic characteristics. This analysis is
+                kept separate from the origin–destination
+                filters above.
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="ageFilter">
+
+                    Age
+
+                </label>
+
+
+                <select id="ageFilter">
+
+                    <option value="ALL">
+
+                        All Age Groups
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="disabilityFilter">
+
+                    Disability
+
+                </label>
+
+
+                <select id="disabilityFilter">
+
+                    <option value="ALL">
+
+                        All Disability Groups
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="incomeFilter">
+
+                    Income
+
+                </label>
+
+
+                <select id="incomeFilter">
+
+                    <option value="ALL">
+
+                        All Income Groups
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <label for="raceFilter">
+
+                    Race
+
+                </label>
+
+
+                <select id="raceFilter">
+
+                    <option value="ALL">
+
+                        All Race Groups
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </details>
+
+
+
+        <div id="summary"></div>
+
+
+
+        <div id="status"></div>
+
+
+    </div>
+
+
+
+<script>
+
+
+// ==========================================================
+// deck.gl CLASSES
+// ==========================================================
+
+const {
+
+    DeckGL,
+    GeoJsonLayer,
+    PathLayer,
+    PolygonLayer,
+    ScatterplotLayer,
+    TextLayer
+
+} = deck;
+
+
+
+// ==========================================================
+// GLOBAL VARIABLES
+// ==========================================================
+
+let allData = [];
+
+let countyGeoJSON = null;
+
+let zipGeoJSON = null;
+
+let countyLabelData = [];
+
+let deckgl;
+
+let currentFilteredData = [];
+
+let currentZoom = 7.2;
+
+let dataStatusText = "";
+
+let selectedMapLocation = null;
+
+
+
+// ==========================================================
+// LOAD FILE
+// ==========================================================
+
+async function loadFirstAvailable(
+    fileNames
+) {
+
+
+    for (
+        const fileName
+        of fileNames
+    ) {
+
+
+        try {
+
+
+            const response =
+
+                await fetch(
+                    fileName
+                );
+
+
+            if (
+                response.ok
+            ) {
+
+
+                return await response.json();
+
+
+            }
+
+
+        }
+
+
+        catch (
+            error
+        ) {
+
+
+            console.warn(
+                "Could not load:",
+                fileName,
+                error
+            );
+
+
+        }
+
+
+    }
+
+
+    throw new Error(
+
+        "Could not load: "
+        +
+        fileNames.join(
+            " or "
+        )
+
+    );
+
+}
+
+
+
+// ==========================================================
+// COUNTY NAME
+// ==========================================================
+
+function getCountyName(
+    feature
+) {
+
+
+    const p =
+        feature.properties
+        ||
+        {};
+
+
+    let countyName =
+
+        p.NAME20
+        ||
+        p.NAMELSAD20
+        ||
+        p.NAMELSAD
+        ||
+        p.NAME
+        ||
+        p.county_name
+        ||
+        "Unknown";
+
+
+    if (
+
+        countyName !==
+        "Unknown"
+
+        &&
+
+        !countyName
+            .toLowerCase()
+            .includes(
+                "county"
+            )
+
+    ) {
+
+
+        countyName +=
+            " County";
+
+
+    }
+
+
+    return countyName;
+
+}
+
+
+
+// ==========================================================
+// POLYGON CENTROID
+// ==========================================================
+
+function calculateRingCentroid(
+    ring
+) {
+
+
+    if (
+        !ring
+        ||
+        ring.length < 3
+    ) {
+
+
+        return null;
+
+
+    }
+
+
+    let area2 = 0;
+
+    let cx = 0;
+
+    let cy = 0;
+
+
+    for (
+        let i = 0;
+        i < ring.length;
+        i++
+    ) {
+
+
+        const current =
+            ring[i];
+
+
+        const next =
+
+            ring[
+                (
+                    i + 1
+                )
+                %
+                ring.length
+            ];
+
+
+        const x1 =
+            Number(
+                current[0]
+            );
+
+
+        const y1 =
+            Number(
+                current[1]
+            );
+
+
+        const x2 =
+            Number(
+                next[0]
+            );
+
+
+        const y2 =
+            Number(
+                next[1]
+            );
+
+
+        const cross =
+
+            x1 * y2
+            -
+            x2 * y1;
+
+
+        area2 +=
+            cross;
+
+
+        cx +=
+
+            (
+                x1 + x2
+            )
+            *
+            cross;
+
+
+        cy +=
+
+            (
+                y1 + y2
+            )
+            *
+            cross;
+
+
+    }
+
+
+    if (
+
+        Math.abs(
+            area2
+        )
+        <
+        0.000000000001
+
+    ) {
+
+
+        const xs =
+
+            ring.map(
+                c =>
+                    Number(
+                        c[0]
+                    )
+            );
+
+
+        const ys =
+
+            ring.map(
+                c =>
+                    Number(
+                        c[1]
+                    )
+            );
+
+
+        return {
+
+
+            position: [
+
+                (
+                    Math.min(
+                        ...xs
+                    )
+                    +
+                    Math.max(
+                        ...xs
+                    )
+                )
+                /
+                2,
+
+                (
+                    Math.min(
+                        ...ys
+                    )
+                    +
+                    Math.max(
+                        ...ys
+                    )
+                )
+                /
+                2
+
+            ],
+
+
+            area:
+                0
+
+
+        };
+
+
+    }
+
+
+    return {
+
+
+        position: [
+
+            cx
+            /
+            (
+                3
+                *
+                area2
+            ),
+
+            cy
+            /
+            (
+                3
+                *
+                area2
+            )
+
+        ],
+
+
+        area:
+
+            Math.abs(
+                area2
+                /
+                2
+            )
+
+
+    };
+
+}
+
+
+
+// ==========================================================
+// DESTINATION REGION TEST
+// ==========================================================
+
+function isPointInRing(
+    point,
+    ring
+) {
+
+
+    const x =
+        Number(
+            point[0]
+        );
+
+
+    const y =
+        Number(
+            point[1]
+        );
+
+
+    let inside =
+        false;
+
+
+    for (
+        let i = 0,
+            j = ring.length - 1;
+        i < ring.length;
+        j = i++
+    ) {
+
+
+        const xi =
+            Number(
+                ring[i][0]
+            );
+
+
+        const yi =
+            Number(
+                ring[i][1]
+            );
+
+
+        const xj =
+            Number(
+                ring[j][0]
+            );
+
+
+        const yj =
+            Number(
+                ring[j][1]
+            );
+
+
+        const intersects =
+            (
+                yi > y
+            )
+            !==
+            (
+                yj > y
+            )
+            &&
+            x
+            <
+            (
+                xj
+                -
+                xi
+            )
+            *
+            (
+                y
+                -
+                yi
+            )
+            /
+            (
+                yj
+                -
+                yi
+            )
+            +
+            xi;
+
+
+        if (
+            intersects
+        ) {
+
+
+            inside =
+                !inside;
+
+
+        }
+
+
+    }
+
+
+    return inside;
+
+}
+
+
+function isPointInPolygon(
+    point,
+    polygon
+) {
+
+
+    if (
+        !polygon
+        ||
+        !polygon.length
+        ||
+        !isPointInRing(
+            point,
+            polygon[0]
+        )
+    ) {
+
+
+        return false;
+
+
+    }
+
+
+    for (
+        let i = 1;
+        i < polygon.length;
+        i++
+    ) {
+
+
+        if (
+            isPointInRing(
+                point,
+                polygon[i]
+            )
+        ) {
+
+
+            return false;
+
+
+        }
+
+
+    }
+
+
+    return true;
+
+}
+
+
+function isPointInFeature(
+    point,
+    feature
+) {
+
+
+    const geometry =
+        feature
+        &&
+        feature.geometry;
+
+
+    if (
+        !geometry
+    ) {
+
+
+        return false;
+
+
+    }
+
+
+    if (
+        geometry.type ===
+        "Polygon"
+    ) {
+
+
+        return isPointInPolygon(
+            point,
+            geometry.coordinates
+        );
+
+
+    }
+
+
+    if (
+        geometry.type ===
+        "MultiPolygon"
+    ) {
+
+
+        return geometry.coordinates.some(
+            polygon =>
+                isPointInPolygon(
+                    point,
+                    polygon
+                )
+        );
+
+
+    }
+
+
+    return false;
+
+}
+
+
+function isDestinationInsideRegion(
+    d
+) {
+
+
+    const lon =
+        Number(
+            d.destination_lon
+        );
+
+
+    const lat =
+        Number(
+            d.destination_lat
+        );
+
+
+    if (
+        !Number.isFinite(
+            lon
+        )
+        ||
+        !Number.isFinite(
+            lat
+        )
+        ||
+        !countyGeoJSON
+        ||
+        !countyGeoJSON.features
+    ) {
+
+
+        return false;
+
+
+    }
+
+
+    return countyGeoJSON.features.some(
+        feature =>
+            isPointInFeature(
+                [
+                    lon,
+                    lat
+                ],
+                feature
+            )
+    );
+
+}
+
+
+// ==========================================================
+// COUNTY LABEL POSITION
+// ==========================================================
+
+function getCountyLabelPosition(
+    feature
+) {
+
+
+    if (
+        !feature
+        ||
+        !feature.geometry
+    ) {
+
+
+        return null;
+
+
+    }
+
+
+    const geometry =
+        feature.geometry;
+
+
+    if (
+        geometry.type ===
+        "Polygon"
+    ) {
+
+
+        const result =
+
+            calculateRingCentroid(
+                geometry.coordinates[0]
+            );
+
+
+        return result
+            ?
+            result.position
+            :
+            null;
+
+
+    }
+
+
+    if (
+        geometry.type ===
+        "MultiPolygon"
+    ) {
+
+
+        let largestResult =
+            null;
+
+
+        geometry.coordinates.forEach(
+
+            polygon => {
+
+
+                const result =
+
+                    calculateRingCentroid(
+                        polygon[0]
+                    );
+
+
+                if (
+
+                    result
+
+                    &&
+
+                    (
+                        !largestResult
+                        ||
+                        result.area
+                        >
+                        largestResult.area
+                    )
+
+                ) {
+
+
+                    largestResult =
+                        result;
+
+
+                }
+
+
+            }
+
+        );
+
+
+        return largestResult
+            ?
+            largestResult.position
+            :
+            null;
+
+
+    }
+
+
+    return null;
+
+}
+
+
+
+// ==========================================================
+// COUNTY LABEL DATA
+// ==========================================================
+
+function createCountyLabelData() {
+
+
+    if (
+        !countyGeoJSON
+        ||
+        !countyGeoJSON.features
+    ) {
+
+
+        return [];
+
+
+    }
+
+
+    return countyGeoJSON.features
+
+        .map(
+
+            feature => {
+
+
+                const position =
+
+                    getCountyLabelPosition(
+                        feature
+                    );
+
+
+                if (
+                    !position
+                ) {
+
+
+                    return null;
+
+
+                }
+
+
+                return {
+
+
+                    name:
+
+                        getCountyName(
+                            feature
+                        ),
+
+
+                    position:
+                        position
+
+
+                };
+
+
+            }
+
+        )
+
+        .filter(
+            d => d
+        );
+
+}
+
+
+
+// ==========================================================
+// LOAD DATA
+// ==========================================================
+
+Promise.all([
+
+
+    loadFirstAvailable([
+        "./od_data.json"
+    ]),
+
+
+    loadFirstAvailable([
+        "./county_boundaries.geojson",
+        "./county_boundaries.json"
+    ]),
+
+
+    loadFirstAvailable([
+        "./zip_boundaries.json",
+        "./zip_boundaries.geojson"
+    ])
+
+
+])
+
+
+.then(
+
+    ([
+        odData,
+        countyData,
+        zipData
+    ]) => {
+
+
+        allData =
+            odData;
+
+
+        currentFilteredData =
+            allData;
+
+
+        countyGeoJSON =
+            countyData;
+
+
+        zipGeoJSON =
+            zipData;
+
+
+        countyLabelData =
+            createCountyLabelData();
+
+
+        initializeODFilters();
+
+        initializeDemographicFilters();
+
+        initializeMap();
+
+        updateTopDestinationsChart();
+
+        initializeTopDestinationsChart();
+
+        initializeUserGuide();
+
+
+        dataStatusText =
+
+            countyGeoJSON.features.length
+            +
+            " counties · "
+            +
+            zipGeoJSON.features.length
+            +
+            " ZIP/ZCTAs";
+
+
+        updateStatusText();
+
+
+    }
+
+)
+
+
+.catch(
+
+    error => {
+
+
+        console.error(
+            error
+        );
+
+
+        document.getElementById(
+            "summary"
+        ).innerHTML =
+
+            "<b>Map loading error</b>"
+            +
+            "<br>"
+            +
+            error.message;
+
+
+    }
+
+);
+
+
+
+// ==========================================================
+// POPULATE SELECT
+// ==========================================================
+
+function initializeTopDestinationsChart() {
+
+
+    const chart =
+        document.getElementById(
+            "topDestinationsChart"
+        );
+
+
+    if (
+        !chart
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    chart.addEventListener(
+
+        "click",
+
+        event => {
+
+
+            const row =
+                event.target.closest(
+                    ".top-destination-row"
+                );
+
+
+            if (
+                !row
+            ) {
+
+
+                return;
+
+
+            }
+
+
+            const destination =
+                row.dataset.destination;
+
+
+            if (
+                !destination
+            ) {
+
+
+                return;
+
+
+            }
+
+
+            const destinationFilter =
+                document.getElementById(
+                    "destinationFilter"
+                );
+
+
+            destinationFilter.value =
+                destinationFilter.value ===
+                destination
+                    ?
+                    "ALL"
+                    :
+                    destination;
+
+
+            applyODFilters();
+
+
+        }
+
+    );
+
+}
+
+
+function initializeUserGuide() {
+
+
+    const button =
+        document.getElementById(
+            "userGuideButton"
+        );
+
+
+    const backdrop =
+        document.getElementById(
+            "user-guide-backdrop"
+        );
+
+
+    const closeButton =
+        document.getElementById(
+            "user-guide-close"
+        );
+
+
+    if (
+        !button
+        ||
+        !backdrop
+        ||
+        !closeButton
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    const openGuide =
+        () => {
+
+
+            backdrop.classList.add(
+                "is-open"
+            );
+
+
+            backdrop.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+
+            closeButton.focus();
+
+
+        };
+
+
+    const closeGuide =
+        () => {
+
+
+            backdrop.classList.remove(
+                "is-open"
+            );
+
+
+            backdrop.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+
+            button.focus();
+
+
+        };
+
+
+    button.addEventListener(
+        "click",
+        openGuide
+    );
+
+
+    closeButton.addEventListener(
+        "click",
+        closeGuide
+    );
+
+
+    backdrop.addEventListener(
+
+        "click",
+
+        event => {
+
+
+            if (
+                event.target ===
+                backdrop
+            ) {
+
+
+                closeGuide();
+
+
+            }
+
+
+        }
+
+    );
+
+
+    document.addEventListener(
+
+        "keydown",
+
+        event => {
+
+
+            if (
+                event.key ===
+                "Escape"
+                &&
+                backdrop.classList.contains(
+                    "is-open"
+                )
+            ) {
+
+
+                closeGuide();
+
+
+            }
+
+
+        }
+
+    );
+
+}
+
+
+function populateDropdown(
+    elementId,
+    fieldName
+) {
+
+
+    const select =
+
+        document.getElementById(
+            elementId
+        );
+
+
+    const values = [
+
+        ...new Set(
+
+            allData
+
+                .map(
+                    d =>
+                        d[fieldName]
+                )
+
+                .filter(
+
+                    value =>
+
+                        value !== null
+
+                        &&
+
+                        value !== undefined
+
+                        &&
+
+                        String(
+                            value
+                        ).trim() !== ""
+
+                )
+
+        )
+
+    ];
+
+
+    if (
+        elementId ===
+        "ageFilter"
+        ||
+        elementId ===
+        "disabilityFilter"
+        ||
+        elementId ===
+        "incomeFilter"
+        ||
+        elementId ===
+        "raceFilter"
+    ) {
+
+
+        const customOrder =
+            new Map(
+                (
+                    elementId ===
+                    "ageFilter"
+                        ?
+                        [
+                            "Under 18",
+                            "18-24",
+                            "25-34",
+                            "35-44",
+                            "45-54",
+                            "55-64",
+                            "65+"
+                        ]
+                        :
+                        (
+                            elementId ===
+                            "disabilityFilter"
+                                ?
+                                [
+                                    "No",
+                                    "Yes",
+                                    "Prefer not to answer"
+                                ]
+                                :
+                                (
+                                    elementId ===
+                                    "incomeFilter"
+                                        ?
+                                        [
+                                            "Less than $15,000",
+                                            "$15,000-$24,999",
+                                            "$25,000-$49,999",
+                                            "$50,000-$74,999",
+                                            "$75,000 or more",
+                                            "Prefer not to answer"
+                                        ]
+                                        :
+                                        [
+                                            "White",
+                                            "Black",
+                                            "American Indian or Alaska Native",
+                                            "Asian or Pacific Islander",
+                                            "Hispanic/Latino",
+                                            "Other",
+                                            "No Response",
+                                            "Prefer not to answer"
+                                        ]
+                                )
+                        )
+                ).map(
+                    (
+                        value,
+                        index
+                    ) => [
+                        value,
+                        index
+                    ]
+                )
+            );
+
+
+        values.sort(
+
+            (
+                a,
+                b
+            ) =>
+                (
+                    customOrder.get(
+                        String(
+                            a
+                        )
+                    )
+                    ??
+                    Number.MAX_SAFE_INTEGER
+                )
+                -
+                (
+                    customOrder.get(
+                        String(
+                            b
+                        )
+                    )
+                    ??
+                    Number.MAX_SAFE_INTEGER
+                )
+
+        );
+
+
+    } else {
+
+
+        values.sort(
+
+            (
+                a,
+                b
+            ) =>
+
+                String(a)
+                    .localeCompare(
+                        String(b),
+                        undefined,
+                        {
+                            numeric: true
+                        }
+                    )
+
+        );
+
+
+    }
+
+
+    values.forEach(
+
+        value => {
+
+
+            const option =
+
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                String(
+                    value
+                );
+
+
+            option.textContent =
+                String(
+                    value
+                );
+
+
+            select.appendChild(
+                option
+            );
+
+
+        }
+
+    );
+
+}
+
+
+
+// ==========================================================
+// INITIALIZE OD FILTERS
+// ==========================================================
+
+function initializeODFilters() {
+
+
+    populateDropdown(
+        "countyFilter",
+        "origin_county"
+    );
+
+
+    populateDropdown(
+        "destinationFilter",
+        "destination"
+    );
+
+
+    populateLocationDropdown();
+
+
+    document.getElementById(
+        "countyFilter"
+    ).addEventListener(
+
+        "change",
+
+        applyODFilters
+
+    );
+
+
+    document.getElementById(
+        "destinationFilter"
+    ).addEventListener(
+
+        "change",
+
+        applyODFilters
+
+    );
+
+
+    document.querySelectorAll(
+        "input[name='destinationRegion']"
+    ).forEach(
+
+        input => {
+
+
+            input.addEventListener(
+
+                "change",
+
+                applyODFilters
+
+            );
+
+        }
+
+    );
+
+
+    document.getElementById(
+        "map-selection-popup"
+    ).addEventListener(
+
+        "click",
+
+        () => {
+
+
+            selectedMapLocation =
+                null;
+
+
+            hideSelectionPopup();
+
+
+            applyODFilters();
+
+
+        }
+
+    );
+
+
+    document.getElementById(
+        "viewMode"
+    ).addEventListener(
+
+        "change",
+
+        () => updateMapLayers(
+            currentFilteredData
+        )
+
+    );
+
+}
+
+
+
+// ==========================================================
+// INITIALIZE DEMOGRAPHIC FILTERS
+// ==========================================================
+
+function initializeDemographicFilters() {
+
+
+    populateDropdown(
+        "ageFilter",
+        "Age"
+    );
+
+
+    populateDropdown(
+        "disabilityFilter",
+        "Disability"
+    );
+
+
+    populateDropdown(
+        "incomeFilter",
+        "Income"
+    );
+
+
+    populateDropdown(
+        "raceFilter",
+        "Race"
+    );
+
+
+    document.getElementById(
+        "ageFilter"
+    ).addEventListener(
+
+        "change",
+
+        applyDemographicFilters
+
+    );
+
+
+    document.getElementById(
+        "disabilityFilter"
+    ).addEventListener(
+
+        "change",
+
+        applyDemographicFilters
+
+    );
+
+
+    document.getElementById(
+        "incomeFilter"
+    ).addEventListener(
+
+        "change",
+
+        applyDemographicFilters
+
+    );
+
+
+    document.getElementById(
+        "raceFilter"
+    ).addEventListener(
+
+        "change",
+
+        applyDemographicFilters
+
+    );
+
+}
+
+
+
+// ==========================================================
+// RESET OD FILTERS
+// ==========================================================
+
+function resetODFilters() {
+
+
+    selectedMapLocation =
+        null;
+
+
+    hideSelectionPopup();
+
+
+    document.getElementById(
+        "countyFilter"
+    ).value =
+        "ALL";
+
+
+    document.getElementById(
+        "destinationFilter"
+    ).value =
+        "ALL";
+
+
+    document.querySelector(
+        "input[name='destinationRegion'][value='ALL']"
+    ).checked =
+        true;
+
+
+    document.getElementById(
+        "locationFilter"
+    ).value =
+        "ALL";
+
+}
+
+
+
+// ==========================================================
+// RESET DEMOGRAPHIC FILTERS
+// ==========================================================
+
+function resetDemographicFilters() {
+
+
+    document.getElementById(
+        "ageFilter"
+    ).value =
+        "ALL";
+
+
+    document.getElementById(
+        "disabilityFilter"
+    ).value =
+        "ALL";
+
+
+    document.getElementById(
+        "incomeFilter"
+    ).value =
+        "ALL";
+
+
+    document.getElementById(
+        "raceFilter"
+    ).value =
+        "ALL";
+
+}
+
+
+function resetToInitialView() {
+
+
+    resetODFilters();
+
+
+    resetDemographicFilters();
+
+
+    document.getElementById(
+        "viewMode"
+    ).value =
+        "flows";
+
+
+    updateMapLayers(
+        allData
+    );
+
+
+    updateODSummary(
+
+        allData,
+        "ALL",
+        "ALL",
+        "ALL",
+        "ALL"
+
+    );
+
+
+    updateTopDestinationsChart(
+        allData
+    );
+
+
+    updateStatusText();
+
+}
+
+
+function filterDataByLocationIds(
+    data,
+    sourceIds
+) {
+
+
+    if (
+        !sourceIds
+        ||
+        !sourceIds.length
+    ) {
+
+
+        return data;
+
+
+    }
+
+
+    const selectedIds =
+        new Set(
+            sourceIds
+        );
+
+
+    return data.filter(
+
+        d =>
+            selectedIds.has(
+                "origin:"
+                +
+                d.zipcode
+            )
+            ||
+            selectedIds.has(
+                "destination:"
+                +
+                d.destination
+            )
+
+    );
+
+}
+
+
+function getLocationTripStats(
+    sourceIds
+) {
+
+
+    const selectedIds =
+        new Set(
+            sourceIds
+            ||
+            []
+        );
+
+
+    return allData.reduce(
+
+        (
+            stats,
+            d
+        ) => {
+
+
+            const originId =
+                "origin:"
+                +
+                d.zipcode;
+
+
+            const destinationId =
+                "destination:"
+                +
+                d.destination;
+
+
+            const count =
+                Number(
+                    d.flow_count
+                    ||
+                    0
+                );
+
+
+            const isOrigin =
+                selectedIds.has(
+                    originId
+                );
+
+
+            const isDestination =
+                selectedIds.has(
+                    destinationId
+                );
+
+
+            if (
+                isOrigin
+            ) {
+
+
+                stats.outgoing +=
+                    count;
+
+
+            }
+
+
+            if (
+                isDestination
+            ) {
+
+
+                stats.incoming +=
+                    count;
+
+
+            }
+
+
+            if (
+                isOrigin
+                &&
+                isDestination
+            ) {
+
+
+                stats.internal +=
+                    count;
+
+
+            }
+
+
+            return stats;
+
+
+        },
+
+        {
+
+            incoming:
+                0,
+
+            outgoing:
+                0,
+
+            internal:
+                0
+
+        }
+
+    );
+
+}
+
+
+function hideSelectionPopup() {
+
+
+    const popup =
+        document.getElementById(
+            "map-selection-popup"
+        );
+
+
+    if (
+        popup
+    ) {
+
+
+        popup.style.display =
+            "none";
+
+
+    }
+
+}
+
+
+function escapePopupHtml(
+    value
+) {
+
+
+    return String(
+        value
+        ??
+        ""
+    ).replace(
+        /[&<>"']/g,
+        character => ({
+            "&":
+                "&amp;",
+            "<":
+                "&lt;",
+            ">":
+                "&gt;",
+            "\"":
+                "&quot;",
+            "'":
+                "&#39;"
+        })[character]
+    );
+
+}
+
+
+function showSelectionPopup(
+    selection
+) {
+
+
+    const popup =
+        document.getElementById(
+            "map-selection-popup"
+        );
+
+
+    if (
+        !popup
+        ||
+        !selection
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    const stats =
+        getLocationTripStats(
+            selection.sourceIds
+        );
+
+    const isDestinationSelection =
+        selection.type ===
+        "Destination"
+        ||
+        (
+            selection.sourceIds
+            ||
+            []
+        ).every(
+            id =>
+                String(
+                    id
+                ).startsWith(
+                    "destination:"
+                )
+        );
+
+    let popupHtml =
+        "<div class='popup-title'>"
+        +
+        selection.label
+        +
+        "</div>"
+        +
+        "<div class='popup-row'><span>To this location</span><span class='popup-value'>"
+        +
+        stats.incoming.toLocaleString()
+        +
+        "</span></div>";
+
+
+    if (
+        !isDestinationSelection
+    ) {
+
+
+        popupHtml +=
+        "<div class='popup-row'><span>From this location</span><span class='popup-value'>"
+        +
+        stats.outgoing.toLocaleString()
+        +
+        "</span></div>";
+
+
+    }
+
+
+    popup.innerHTML =
+        popupHtml
+        +
+        "<div class='popup-hint'>Click to remove from selection</div>";
+
+
+    popup.style.left =
+        Math.max(
+            12,
+            selection.x
+            -
+            82
+        )
+        +
+        "px";
+
+
+    popup.style.top =
+        Math.max(
+            12,
+            selection.y
+            -
+            118
+        )
+        +
+        "px";
+
+
+    popup.style.display =
+        "block";
+
+}
+
+
+function showFlowConnectionPopup(
+    flow,
+    x,
+    y
+) {
+
+
+    const popup =
+        document.getElementById(
+            "map-selection-popup"
+        );
+
+
+    if (
+        !popup
+        ||
+        !flow
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    const originLabel =
+        flow.originLabel
+        ||
+        flow.originName
+        ||
+        flow.origin
+        ||
+        "";
+
+
+    const destinationLabel =
+        flow.destinationLabel
+        ||
+        flow.destinationName
+        ||
+        flow.destination
+        ||
+        "";
+
+
+    const mentionCount =
+        Number(
+            flow.count
+            ??
+            flow.flow_count
+            ??
+            0
+        );
+
+
+    popup.innerHTML =
+        "<div class='popup-title'>OD Connection</div>"
+        +
+        "<div class='popup-row popup-row-stacked'><span>From this location</span><span class='popup-value'>"
+        +
+        escapePopupHtml(
+            originLabel
+        )
+        +
+        "</span></div>"
+        +
+        "<div class='popup-row popup-row-stacked'><span>To this location</span><span class='popup-value'>"
+        +
+        escapePopupHtml(
+            destinationLabel
+        )
+        +
+        "</span></div>"
+        +
+        "<div class='popup-row'><span>Survey mentions</span><span class='popup-value'>"
+        +
+        mentionCount.toLocaleString()
+        +
+        "</span></div>"
+        +
+        "<div class='popup-hint'>Click to close</div>";
+
+
+    popup.style.left =
+        Math.max(
+            12,
+            x
+            -
+            112
+        )
+        +
+        "px";
+
+
+    popup.style.top =
+        Math.max(
+            12,
+            y
+            -
+            136
+        )
+        +
+        "px";
+
+
+    popup.style.display =
+        "block";
+
+}
+
+
+function showCountyPopup(
+    county,
+    record,
+    x,
+    y
+) {
+
+
+    const popup =
+        document.getElementById(
+            "map-selection-popup"
+        );
+
+
+    if (
+        !popup
+        ||
+        !county
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    popup.innerHTML =
+        "<div class='popup-title'>"
+        +
+        county
+        +
+        "</div>"
+        +
+        "<div class='popup-row'><span>Survey mentions</span><span class='popup-value'>"
+        +
+        (
+            record
+                ?
+                record.flow_count.toLocaleString()
+                :
+                "0"
+        )
+        +
+        "</span></div>"
+        +
+        "<div class='popup-hint'>Click to close</div>";
+
+
+    popup.style.left =
+        Math.max(
+            12,
+            x
+            -
+            86
+        )
+        +
+        "px";
+
+
+    popup.style.top =
+        Math.max(
+            12,
+            y
+            -
+            118
+        )
+        +
+        "px";
+
+
+    popup.style.display =
+        "block";
+
+}
+
+
+function showZipPopup(
+    zip,
+    record,
+    x,
+    y
+) {
+
+
+    const popup =
+        document.getElementById(
+            "map-selection-popup"
+        );
+
+
+    if (
+        !popup
+        ||
+        !zip
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    popup.innerHTML =
+        "<div class='popup-title'>ZIP / ZCTA "
+        +
+        zip
+        +
+        "</div>"
+        +
+        "<div class='popup-row'><span>County</span><span class='popup-value'>"
+        +
+        (
+            record
+                ?
+                (
+                    record.origin_county
+                    ||
+                    ""
+                )
+                :
+                ""
+        )
+        +
+        "</span></div>"
+        +
+        "<div class='popup-row'><span>Survey mentions</span><span class='popup-value'>"
+        +
+        (
+            record
+                ?
+                record.flow_count.toLocaleString()
+                :
+                "0"
+        )
+        +
+        "</span></div>"
+        +
+        "<div class='popup-hint'>Click to close</div>";
+
+
+    popup.style.left =
+        Math.max(
+            12,
+            x
+            -
+            86
+        )
+        +
+        "px";
+
+
+    popup.style.top =
+        Math.max(
+            12,
+            y
+            -
+            118
+        )
+        +
+        "px";
+
+
+    popup.style.display =
+        "block";
+
+}
+
+
+function filterDataByCurrentDemographics(
+    data
+) {
+
+
+    const age =
+        document.getElementById(
+            "ageFilter"
+        ).value;
+
+
+    const disability =
+        document.getElementById(
+            "disabilityFilter"
+        ).value;
+
+
+    const income =
+        document.getElementById(
+            "incomeFilter"
+        ).value;
+
+
+    const race =
+        document.getElementById(
+            "raceFilter"
+        ).value;
+
+
+    let filteredData =
+        data;
+
+
+    if (
+        age !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+            filteredData.filter(
+                d =>
+                    String(
+                        d.Age
+                    )
+                    ===
+                    age
+            );
+
+
+    }
+
+
+    if (
+        disability !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+            filteredData.filter(
+                d =>
+                    String(
+                        d.Disability
+                    )
+                    ===
+                    disability
+            );
+
+
+    }
+
+
+    if (
+        income !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+            filteredData.filter(
+                d =>
+                    String(
+                        d.Income
+                    )
+                    ===
+                    income
+            );
+
+
+    }
+
+
+    if (
+        race !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+            filteredData.filter(
+                d =>
+                    String(
+                        d.Race
+                    )
+                    ===
+                    race
+            );
+
+
+    }
+
+
+    return filteredData;
+
+}
+
+
+function filterDataByCurrentODFilters(
+    data
+) {
+
+
+    const county =
+        document.getElementById(
+            "countyFilter"
+        ).value;
+
+
+    const destination =
+        document.getElementById(
+            "destinationFilter"
+        ).value;
+
+
+    const destinationRegion =
+        document.querySelector(
+            "input[name='destinationRegion']:checked"
+        )?.value ||
+        "ALL";
+
+
+    const location =
+        document.getElementById(
+            "locationFilter"
+        ).value;
+
+
+    let filteredData =
+        data;
+
+
+    if (
+        county !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+            filteredData.filter(
+                d =>
+                    String(
+                        d.origin_county
+                    )
+                    ===
+                    county
+            );
+
+
+    }
+
+
+    if (
+        destination !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+            filteredData.filter(
+                d =>
+                    String(
+                        d.destination
+                    )
+                    ===
+                    destination
+            );
+
+
+    }
+
+
+    if (
+        destinationRegion !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+            filteredData.filter(
+                d =>
+                    isDestinationInsideRegion(
+                        d
+                    )
+                    ===
+                    (
+                        destinationRegion ===
+                        "INSIDE"
+                    )
+            );
+
+
+    }
+
+
+    if (
+        location !==
+        "ALL"
+    ) {
+
+
+        const separatorIndex =
+            location.indexOf(
+                ":"
+            );
+
+
+        const locationType =
+            location.slice(
+                0,
+                separatorIndex
+            );
+
+
+        const locationValue =
+            location.slice(
+                separatorIndex
+                +
+                1
+            );
+
+
+        filteredData =
+            filteredData.filter(
+                d =>
+                    (
+                        locationType ===
+                        "origin"
+                        &&
+                        String(
+                            d.zipcode
+                        )
+                        ===
+                        locationValue
+                    )
+                    ||
+                    (
+                        locationType ===
+                        "destination"
+                        &&
+                        String(
+                            d.destination
+                        )
+                        ===
+                        locationValue
+                    )
+            );
+
+
+    }
+
+
+    if (
+        selectedMapLocation
+    ) {
+
+
+        filteredData =
+            filterDataByLocationIds(
+                filteredData,
+                selectedMapLocation.sourceIds
+            );
+
+
+    }
+
+
+    return filteredData;
+
+}
+
+
+// ==========================================================
+// APPLY OD FILTERS
+//
+// Demographics are kept separate.
+// ==========================================================
+
+function applyODFilters() {
+
+
+    const county =
+
+        document.getElementById(
+            "countyFilter"
+        ).value;
+
+
+    const destination =
+
+        document.getElementById(
+            "destinationFilter"
+        ).value;
+
+
+    const destinationRegion =
+
+        document.querySelector(
+            "input[name='destinationRegion']:checked"
+        )?.value ||
+        "ALL";
+
+
+    const location =
+
+        document.getElementById(
+            "locationFilter"
+        ).value;
+
+
+    let filteredData =
+        allData.slice();
+
+
+    if (
+        county !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+
+            filteredData.filter(
+
+                d =>
+                    String(
+                        d.origin_county
+                    )
+                    ===
+                    county
+
+            );
+
+
+    }
+
+
+    if (
+        destination !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+
+            filteredData.filter(
+
+                d =>
+                    String(
+                        d.destination
+                    )
+                    ===
+                    destination
+
+            );
+
+
+    }
+
+
+    if (
+        destinationRegion !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+
+            filteredData.filter(
+
+                d =>
+                    isDestinationInsideRegion(
+                        d
+                    )
+                    ===
+                    (
+                        destinationRegion ===
+                        "INSIDE"
+                    )
+
+            );
+
+
+    }
+
+
+    if (
+        location !==
+        "ALL"
+    ) {
+
+
+        const separatorIndex =
+            location.indexOf(
+                ":"
+            );
+
+
+        const locationType =
+            location.slice(
+                0,
+                separatorIndex
+            );
+
+
+        const locationValue =
+            location.slice(
+                separatorIndex
+                +
+                1
+            );
+
+
+        filteredData =
+
+            filteredData.filter(
+
+                d =>
+                    (
+                        locationType ===
+                        "origin"
+                        &&
+                        String(
+                            d.zipcode
+                        )
+                        ===
+                        locationValue
+                    )
+                    ||
+                    (
+                        locationType ===
+                        "destination"
+                        &&
+                        String(
+                            d.destination
+                        )
+                        ===
+                        locationValue
+                    )
+
+            );
+
+
+    }
+
+
+    if (
+        selectedMapLocation
+    ) {
+
+
+        filteredData =
+            filterDataByLocationIds(
+                filteredData,
+                selectedMapLocation.sourceIds
+            );
+
+
+    }
+
+
+    filteredData =
+        filterDataByCurrentDemographics(
+            filteredData
+        );
+
+
+    updateTopDestinationsChart();
+
+
+    updateMapLayers(
+        filteredData
+    );
+
+
+    updateODSummary(
+
+        filteredData,
+        county,
+        destination,
+        location,
+        destinationRegion
+
+    );
+
+
+}
+
+
+
+// ==========================================================
+// APPLY DEMOGRAPHIC FILTERS
+//
+// OD filters are kept separate.
+// ==========================================================
+
+function applyDemographicFilters() {
+
+
+    const age =
+
+        document.getElementById(
+            "ageFilter"
+        ).value;
+
+
+    const disability =
+
+        document.getElementById(
+            "disabilityFilter"
+        ).value;
+
+
+    const income =
+
+        document.getElementById(
+            "incomeFilter"
+        ).value;
+
+
+    const race =
+
+        document.getElementById(
+            "raceFilter"
+        ).value;
+
+
+    let filteredData =
+        allData.slice();
+
+
+    if (
+        age !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+
+            filteredData.filter(
+
+                d =>
+                    String(
+                        d.Age
+                    )
+                    ===
+                    age
+
+            );
+
+
+    }
+
+
+    if (
+        disability !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+
+            filteredData.filter(
+
+                d =>
+                    String(
+                        d.Disability
+                    )
+                    ===
+                    disability
+
+            );
+
+
+    }
+
+
+    if (
+        income !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+
+            filteredData.filter(
+
+                d =>
+                    String(
+                        d.Income
+                    )
+                    ===
+                    income
+
+            );
+
+
+    }
+
+
+    if (
+        race !==
+        "ALL"
+    ) {
+
+
+        filteredData =
+
+            filteredData.filter(
+
+                d =>
+                    String(
+                        d.Race
+                    )
+                    ===
+                    race
+
+            );
+
+
+    }
+
+
+    filteredData =
+        filterDataByCurrentODFilters(
+            filteredData
+        );
+
+
+    updateTopDestinationsChart();
+
+
+    updateMapLayers(
+        filteredData
+    );
+
+
+    updateDemographicSummary(
+
+        filteredData,
+        age,
+        disability,
+        income,
+        race
+
+    );
+
+
+}
+
+
+
+// ==========================================================
+// AGGREGATION HELPERS
+// ==========================================================
+
+function getSelectedViewMode() {
+
+
+    const control =
+
+        document.getElementById(
+            "viewMode"
+        );
+
+
+    return control
+        ?
+        control.value
+        :
+        "county";
+
+}
+
+
+function populateLocationDropdown() {
+
+
+    const select =
+
+        document.getElementById(
+            "locationFilter"
+        );
+
+
+    const originOptions = [
+
+        ...new Set(
+
+            allData
+
+                .map(
+                    d =>
+                        d.zipcode
+                )
+
+                .filter(
+                    d => d
+                )
+
+        )
+
+    ];
+
+
+    const destinationOptions = [
+
+        ...new Set(
+
+            allData
+
+                .map(
+                    d =>
+                        d.destination
+                )
+
+                .filter(
+                    d => d
+                )
+
+        )
+
+    ];
+
+
+    const sortValues =
+
+        values =>
+
+            values.sort(
+
+                (
+                    a,
+                    b
+                ) =>
+
+                    String(a)
+                        .localeCompare(
+                            String(b),
+                            undefined,
+                            {
+                                numeric: true
+                            }
+                        )
+
+            );
+
+
+    sortValues(
+        originOptions
+    ).forEach(
+
+        value => {
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                "origin:"
+                +
+                value;
+
+
+            option.textContent =
+                "Origin ZIP "
+                +
+                value;
+
+
+            select.appendChild(
+                option
+            );
+
+
+        }
+
+    );
+
+
+    document.getElementById(
+        "locationFilter"
+    ).addEventListener(
+
+        "change",
+
+        () => {
+
+
+            selectedMapLocation =
+                null;
+
+
+            hideSelectionPopup();
+
+
+            applyODFilters();
+
+
+        }
+
+    );
+
+
+    document.getElementById(
+        "clearMapSelection"
+    ).addEventListener(
+
+        "click",
+
+        resetToInitialView
+
+    );
+
+
+    sortValues(
+        destinationOptions
+    ).forEach(
+
+        value => {
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                "destination:"
+                +
+                value;
+
+
+            option.textContent =
+                "Destination "
+                +
+                value;
+
+
+            select.appendChild(
+                option
+            );
+
+
+        }
+
+    );
+
+
+    updateTopDestinationsChart();
+
+}
+
+
+function aggregateByKey(
+    data,
+    getKey,
+    makeRecord,
+    updateRecord
+) {
+
+
+    const grouped =
+        new Map();
+
+
+    data.forEach(
+
+        d => {
+
+
+            const key =
+                getKey(
+                    d
+                );
+
+
+            if (
+                !key
+            ) {
+
+
+                return;
+
+
+            }
+
+
+            if (
+                !grouped.has(
+                    key
+                )
+            ) {
+
+
+                grouped.set(
+                    key,
+                    makeRecord(
+                        d,
+                        key
+                    )
+                );
+
+
+            }
+
+
+            updateRecord(
+                grouped.get(
+                    key
+                ),
+                d
+            );
+
+
+        }
+
+    );
+
+
+    return Array.from(
+        grouped.values()
+    );
+
+}
+
+
+function aggregateCounties(
+    data
+) {
+
+
+    return aggregateByKey(
+
+        data,
+
+        d =>
+            d.origin_county,
+
+        (
+            d,
+            key
+        ) => ({
+
+            county:
+                key,
+
+            flow_count:
+                0,
+
+            zipcodes:
+                new Set(),
+
+            destinations:
+                new Set()
+
+        }),
+
+        (
+            record,
+            d
+        ) => {
+
+
+            record.flow_count +=
+                Number(
+                    d.flow_count
+                    ||
+                    0
+                );
+
+
+            if (
+                d.zipcode
+            ) {
+
+
+                record.zipcodes.add(
+                    d.zipcode
+                );
+
+
+            }
+
+
+            if (
+                d.destination
+            ) {
+
+
+                record.destinations.add(
+                    d.destination
+                );
+
+
+            }
+
+
+        }
+
+    );
+
+
+}
+
+
+function aggregateDestinations(
+    data
+) {
+
+
+    return aggregateByKey(
+
+        data,
+
+        d =>
+            d.destination,
+
+        (
+            d,
+            key
+        ) => ({
+
+            destination:
+                key,
+
+            destination_lat:
+                Number(
+                    d.destination_lat
+                ),
+
+            destination_lon:
+                Number(
+                    d.destination_lon
+                ),
+
+            flow_count:
+                0,
+
+            zipcodes:
+                new Set(),
+
+            counties:
+                new Set()
+
+        }),
+
+        (
+            record,
+            d
+        ) => {
+
+
+            record.flow_count +=
+                Number(
+                    d.flow_count
+                    ||
+                    0
+                );
+
+
+            if (
+                d.zipcode
+            ) {
+
+
+                record.zipcodes.add(
+                    d.zipcode
+                );
+
+
+            }
+
+
+            if (
+                d.origin_county
+            ) {
+
+
+                record.counties.add(
+                    d.origin_county
+                );
+
+
+            }
+
+
+        }
+
+    ).filter(
+
+        d =>
+            Number.isFinite(
+                d.destination_lat
+            )
+            &&
+            Number.isFinite(
+                d.destination_lon
+            )
+
+    );
+
+
+}
+
+
+function buildClusteredDestinationData(
+    data
+) {
+
+
+    const destinations =
+        aggregateDestinations(
+            data
+        );
+
+
+    const cellSize =
+        getClusterCellSize();
+
+
+    if (
+        cellSize ===
+        0
+    ) {
+
+
+        return destinations.map(
+            destination => ({
+
+                ...destination,
+
+                members:
+                    1,
+
+                label:
+                    destination.destination
+
+            })
+        );
+
+
+    }
+
+
+    const clusters =
+        new Map();
+
+
+    destinations.forEach(
+
+        destination => {
+
+
+            const gridX =
+                Math.floor(
+                    destination.destination_lon
+                    /
+                    cellSize
+                );
+
+
+            const gridY =
+                Math.floor(
+                    destination.destination_lat
+                    /
+                    cellSize
+                );
+
+
+            const clusterId =
+                [
+                    gridX,
+                    gridY
+                ].join(
+                    ":"
+                );
+
+
+            if (
+                !clusters.has(
+                    clusterId
+                )
+            ) {
+
+
+                clusters.set(
+
+                    clusterId,
+
+                    {
+
+                        destination:
+                            clusterId,
+
+                        label:
+                            destination.destination,
+
+                        destination_lat:
+                            0,
+
+                        destination_lon:
+                            0,
+
+                        flow_count:
+                            0,
+
+                        weight:
+                            0,
+
+                        members:
+                            0,
+
+                        zipcodes:
+                            new Set(),
+
+                        counties:
+                            new Set()
+
+                    }
+
+                );
+
+
+            }
+
+
+            const cluster =
+                clusters.get(
+                    clusterId
+                );
+
+
+            const weight =
+                Math.max(
+                    1,
+                    destination.flow_count
+                );
+
+
+            cluster.destination_lat +=
+                destination.destination_lat
+                *
+                weight;
+
+
+            cluster.destination_lon +=
+                destination.destination_lon
+                *
+                weight;
+
+
+            cluster.flow_count +=
+                destination.flow_count;
+
+
+            cluster.weight +=
+                weight;
+
+
+            cluster.members +=
+                1;
+
+
+            destination.zipcodes.forEach(
+                zipcode =>
+                    cluster.zipcodes.add(
+                        zipcode
+                    )
+            );
+
+
+            destination.counties.forEach(
+                county =>
+                    cluster.counties.add(
+                        county
+                    )
+            );
+
+
+        }
+
+    );
+
+
+    return Array.from(
+        clusters.values()
+    ).map(
+        cluster => ({
+
+            ...cluster,
+
+            destination:
+                cluster.members > 1
+                    ?
+                    cluster.members
+                    +
+                    " destinations"
+                    :
+                    cluster.label,
+
+            destination_lat:
+                cluster.destination_lat
+                /
+                cluster.weight,
+
+            destination_lon:
+                cluster.destination_lon
+                /
+                cluster.weight
+
+        })
+    );
+
+}
+
+
+function aggregateZipOrigins(
+    data
+) {
+
+
+    return aggregateByKey(
+
+        data,
+
+        d =>
+            d.zipcode,
+
+        (
+            d,
+            key
+        ) => ({
+
+            zipcode:
+                key,
+
+            origin_county:
+                d.origin_county,
+
+            origin_lat:
+                Number(
+                    d.origin_lat
+                ),
+
+            origin_lon:
+                Number(
+                    d.origin_lon
+                ),
+
+            flow_count:
+                0,
+
+            destinations:
+                new Set()
+
+        }),
+
+        (
+            record,
+            d
+        ) => {
+
+
+            record.flow_count +=
+                Number(
+                    d.flow_count
+                    ||
+                    0
+                );
+
+
+            if (
+                d.destination
+            ) {
+
+
+                record.destinations.add(
+                    d.destination
+                );
+
+
+            }
+
+
+        }
+
+    ).filter(
+
+        d =>
+            Number.isFinite(
+                d.origin_lat
+            )
+            &&
+            Number.isFinite(
+                d.origin_lon
+            )
+
+    );
+
+
+}
+
+
+function aggregateFlows(
+    data
+) {
+
+
+    return aggregateByKey(
+
+        data,
+
+        d =>
+            [
+                d.zipcode,
+                d.destination
+            ].join(
+                "|"
+            ),
+
+        d => ({
+
+            zipcode:
+                d.zipcode,
+
+            origin_county:
+                d.origin_county,
+
+            origin_lat:
+                Number(
+                    d.origin_lat
+                ),
+
+            origin_lon:
+                Number(
+                    d.origin_lon
+                ),
+
+            destination:
+                d.destination,
+
+            destination_lat:
+                Number(
+                    d.destination_lat
+                ),
+
+            destination_lon:
+                Number(
+                    d.destination_lon
+                ),
+
+            flow_count:
+                0
+
+        }),
+
+        (
+            record,
+            d
+        ) => {
+
+
+            record.flow_count +=
+                Number(
+                    d.flow_count
+                    ||
+                    0
+                );
+
+
+        }
+
+    ).filter(
+
+        d =>
+            Number.isFinite(
+                d.origin_lat
+            )
+            &&
+            Number.isFinite(
+                d.origin_lon
+            )
+            &&
+            Number.isFinite(
+                d.destination_lat
+            )
+            &&
+            Number.isFinite(
+                d.destination_lon
+            )
+
+    );
+
+}
+
+
+function buildFlowmapData(
+    data
+) {
+
+
+    const locations =
+        new Map();
+
+
+    const flows =
+        aggregateFlows(
+            data
+        ).map(
+
+            flow => {
+
+
+                const originId =
+                    "origin:"
+                    +
+                    flow.zipcode;
+
+
+                const destinationId =
+                    "destination:"
+                    +
+                    flow.destination;
+
+
+                if (
+                    !locations.has(
+                        originId
+                    )
+                ) {
+
+
+                    locations.set(
+
+                        originId,
+
+                        {
+
+                            id:
+                                originId,
+
+                            name:
+                                flow.zipcode,
+
+                            type:
+                                "Origin ZIP",
+
+                            county:
+                                flow.origin_county,
+
+                            lat:
+                                flow.origin_lat,
+
+                            lon:
+                                flow.origin_lon,
+
+                            outgoing:
+                                0,
+
+                            incoming:
+                                0,
+
+                            sourceIds: [
+                                originId
+                            ]
+
+                        }
+
+                    );
+
+
+                }
+
+
+                if (
+                    !locations.has(
+                        destinationId
+                    )
+                ) {
+
+
+                    locations.set(
+
+                        destinationId,
+
+                        {
+
+                            id:
+                                destinationId,
+
+                            name:
+                                flow.destination,
+
+                            type:
+                                "Destination",
+
+                            lat:
+                                flow.destination_lat,
+
+                            lon:
+                                flow.destination_lon,
+
+                            outgoing:
+                                0,
+
+                            incoming:
+                                0,
+
+                            sourceIds: [
+                                destinationId
+                            ]
+
+                        }
+
+                    );
+
+
+                }
+
+
+                locations.get(
+                    originId
+                ).outgoing +=
+                    flow.flow_count;
+
+
+                locations.get(
+                    destinationId
+                ).incoming +=
+                    flow.flow_count;
+
+
+                return {
+
+                    origin:
+                        originId,
+
+                    destination:
+                        destinationId,
+
+                    count:
+                        flow.flow_count
+
+                };
+
+
+            }
+
+        );
+
+
+    return {
+
+        locations:
+            Array.from(
+                locations.values()
+            ),
+
+        flows:
+            flows
+
+    };
+
+}
+
+
+function getClusterCellSize() {
+
+
+    if (
+        currentZoom >=
+        10
+    ) {
+
+
+        return 0;
+
+
+    }
+
+
+    return 0.028
+        *
+        Math.pow(
+            2,
+            10
+            -
+            currentZoom
+        );
+
+}
+
+
+function buildClusteredFlowmapData(
+    data
+) {
+
+
+    const baseData =
+        buildFlowmapData(
+            data
+        );
+
+
+    const cellSize =
+        getClusterCellSize();
+
+
+    if (
+        cellSize ===
+        0
+    ) {
+
+
+        return baseData;
+
+
+    }
+
+
+    const clusters =
+        new Map();
+
+
+    const locationToCluster =
+        new Map();
+
+
+    baseData.locations.forEach(
+
+        location => {
+
+
+            const total =
+                location.incoming
+                +
+                location.outgoing;
+
+
+            const gridX =
+                Math.floor(
+                    location.lon
+                    /
+                    cellSize
+                );
+
+
+            const gridY =
+                Math.floor(
+                    location.lat
+                    /
+                    cellSize
+                );
+
+
+            const clusterId =
+                [
+                    location.type,
+                    gridX,
+                    gridY
+                ].join(
+                    ":"
+                );
+
+
+            if (
+                !clusters.has(
+                    clusterId
+                )
+            ) {
+
+
+                clusters.set(
+
+                    clusterId,
+
+                    {
+
+                        id:
+                            clusterId,
+
+                        name:
+                            location.name,
+
+                        type:
+                            location.type,
+
+                        lat:
+                            0,
+
+                        lon:
+                            0,
+
+                        incoming:
+                            0,
+
+                        outgoing:
+                            0,
+
+                        weight:
+                            0,
+
+                        members:
+                            0,
+
+                        sourceIds:
+                            []
+
+                    }
+
+                );
+
+
+            }
+
+
+            const cluster =
+                clusters.get(
+                    clusterId
+                );
+
+
+            const weight =
+                Math.max(
+                    1,
+                    total
+                );
+
+
+            cluster.lat +=
+                location.lat
+                *
+                weight;
+
+
+            cluster.lon +=
+                location.lon
+                *
+                weight;
+
+
+            cluster.incoming +=
+                location.incoming;
+
+
+            cluster.outgoing +=
+                location.outgoing;
+
+
+            cluster.weight +=
+                weight;
+
+
+            cluster.members +=
+                1;
+
+
+            cluster.sourceIds.push(
+                ...(
+                    location.sourceIds
+                    ||
+                    [
+                        location.id
+                    ]
+                )
+            );
+
+
+            locationToCluster.set(
+                location.id,
+                clusterId
+            );
+
+
+        }
+
+    );
+
+
+    const clusteredFlows =
+        new Map();
+
+
+    baseData.flows.forEach(
+
+        flow => {
+
+
+            const origin =
+                locationToCluster.get(
+                    flow.origin
+                );
+
+
+            const destination =
+                locationToCluster.get(
+                    flow.destination
+                );
+
+
+            if (
+                !origin
+                ||
+                !destination
+                ||
+                origin ===
+                destination
+            ) {
+
+
+                return;
+
+
+            }
+
+
+            const flowId =
+                origin
+                +
+                "|"
+                +
+                destination;
+
+
+            if (
+                !clusteredFlows.has(
+                    flowId
+                )
+            ) {
+
+
+                clusteredFlows.set(
+
+                    flowId,
+
+                    {
+
+                        origin:
+                            origin,
+
+                        destination:
+                            destination,
+
+                        count:
+                            0
+
+                    }
+
+                );
+
+
+            }
+
+
+            clusteredFlows.get(
+                flowId
+            ).count +=
+                flow.count;
+
+
+        }
+
+    );
+
+
+    return {
+
+        locations:
+            Array.from(
+                clusters.values()
+            ).map(
+
+                cluster => ({
+
+                    ...cluster,
+
+                    lat:
+                        cluster.lat
+                        /
+                        cluster.weight,
+
+                    lon:
+                        cluster.lon
+                        /
+                        cluster.weight,
+
+                    name:
+                        cluster.members > 1
+                            ?
+                            cluster.members
+                            +
+                            " "
+                            +
+                            (
+                                cluster.type ===
+                                "Destination"
+                                    ?
+                                    "destinations"
+                                    :
+                                    "origin ZIPs"
+                            )
+                            :
+                            cluster.name
+
+                })
+
+            ),
+
+        flows:
+            Array.from(
+                clusteredFlows.values()
+            )
+
+    };
+
+}
+
+
+function getFlowmapRenderData(
+    data
+) {
+
+
+    return buildClusteredFlowmapData(
+        data
+    );
+
+}
+
+
+function getMaxFlow(
+    data
+) {
+
+
+    return Math.max(
+
+        1,
+
+        ...data.map(
+            d =>
+                Number(
+                    d.flow_count
+                    ||
+                    0
+                )
+        )
+
+    );
+
+}
+
+
+function getCountyTotalsMap(
+    data
+) {
+
+
+    return new Map(
+
+        aggregateCounties(
+            data
+        ).map(
+
+            d => [
+
+                d.county,
+                d
+
+            ]
+
+        )
+
+    );
+
+}
+
+
+function getZipCode(
+    feature
+) {
+
+
+    const p =
+        feature
+        &&
+        feature.properties
+            ?
+            feature.properties
+            :
+            {};
+
+
+    const zip =
+        p.zipcode
+        ||
+        p.ZCTA5CE20
+        ||
+        p.ZCTA5CE10
+        ||
+        p.ZCTA5CE
+        ||
+        p.GEOID20
+        ||
+        p.GEOID10
+        ||
+        p.GEOID
+        ||
+        p.ZIPCODE
+        ||
+        p.ZIP_CODE
+        ||
+        p.ZIP;
+
+
+    return zip !== undefined
+        &&
+        zip !== null
+            ?
+            String(
+                zip
+            )
+            :
+            "Unknown";
+
+}
+
+
+function getZipTotalsMap(
+    data
+) {
+
+
+    return new Map(
+
+        aggregateZipOrigins(
+            data
+        ).map(
+
+            d => [
+
+                String(
+                    d.zipcode
+                ),
+
+                d
+
+            ]
+
+        )
+
+    );
+
+}
+
+
+function getFlowCurvePath(
+    flow,
+    locationLookup
+) {
+
+
+    const origin =
+        locationLookup.get(
+            flow.origin
+        );
+
+
+    const destination =
+        locationLookup.get(
+            flow.destination
+        );
+
+
+    if (
+        !origin
+        ||
+        !destination
+    ) {
+
+
+        return [];
+
+
+    }
+
+
+    const x1 =
+        origin.lon;
+
+    const y1 =
+        origin.lat;
+
+    const x2 =
+        destination.lon;
+
+    const y2 =
+        destination.lat;
+
+
+    return [
+
+        [
+            x1,
+            y1
+        ],
+
+        [
+            x2,
+            y2
+        ]
+
+    ];
+
+}
+
+
+function getFlowConnectionColor(
+    flow,
+    maxFlow
+) {
+
+
+    const intensity =
+        Math.sqrt(
+            flow.count
+            /
+            maxFlow
+        );
+
+
+    return [
+
+        Math.round(
+            246
+            +
+            8
+            *
+            intensity
+        ),
+
+        Math.round(
+            181
+            -
+            133
+            *
+            intensity
+        ),
+
+        Math.round(
+            89
+            -
+            58
+            *
+            intensity
+        ),
+
+        Math.round(
+            34
+            +
+            184
+            *
+            intensity
+        )
+
+    ];
+
+}
+
+
+function getFlowArrowPath(
+    flow
+) {
+
+
+    if (
+        !flow.path
+        ||
+        flow.path.length < 2
+    ) {
+
+
+        return [];
+
+
+    }
+
+
+    const start =
+        flow.path[
+            flow.path.length
+            -
+            2
+        ];
+
+
+    const end =
+        flow.path[
+            flow.path.length
+            -
+            1
+        ];
+
+
+    const lonScale =
+        Math.max(
+            0.2,
+            Math.cos(
+                end[1]
+                *
+                Math.PI
+                /
+                180
+            )
+        );
+
+
+    const dxMeters =
+        (
+            end[0]
+            -
+            start[0]
+        )
+        *
+        lonScale
+        *
+        111320;
+
+
+    const dyMeters =
+        (
+            end[1]
+            -
+            start[1]
+        )
+        *
+        111320;
+
+
+    const distanceMeters =
+        Math.hypot(
+            dxMeters,
+            dyMeters
+        );
+
+
+    if (
+        distanceMeters ===
+        0
+    ) {
+
+
+        return [];
+
+
+    }
+
+
+    const unitX =
+        dxMeters
+        /
+        distanceMeters;
+
+
+    const unitY =
+        dyMeters
+        /
+        distanceMeters;
+
+
+    const arrowLength =
+        currentZoom >=
+        10
+            ?
+            700
+            :
+            (
+                currentZoom >=
+                8
+                    ?
+                    1540
+                    :
+                    3080
+            );
+
+
+    const arrowWidth =
+        arrowLength
+        *
+        0.82;
+
+
+    const tipOffset =
+        arrowLength
+        *
+        0.25;
+
+
+    const tipX =
+        dxMeters
+        -
+        unitX
+        *
+        tipOffset;
+
+
+    const tipY =
+        dyMeters
+        -
+        unitY
+        *
+        tipOffset;
+
+
+    const baseX =
+        tipX
+        -
+        unitX
+        *
+        arrowLength;
+
+
+    const baseY =
+        tipY
+        -
+        unitY
+        *
+        arrowLength;
+
+
+    const perpendicularX =
+        -
+        unitY;
+
+
+    const perpendicularY =
+        unitX;
+
+
+    const toLonLat =
+        (
+            xMeters,
+            yMeters
+        ) => [
+
+            start[0]
+            +
+            xMeters
+            /
+            (
+                lonScale
+                *
+                111320
+            ),
+
+            start[1]
+            +
+            yMeters
+            /
+            111320
+
+        ];
+
+
+    return [
+
+        toLonLat(
+            baseX
+            +
+            perpendicularX
+            *
+            arrowWidth,
+            baseY
+            +
+            perpendicularY
+            *
+            arrowWidth
+        ),
+
+        toLonLat(
+            tipX,
+            tipY
+        )
+
+    ];
+
+}
+
+
+function getFlowArrowHeadPolygon(
+    flow
+) {
+
+
+    if (
+        !flow.path
+        ||
+        flow.path.length < 2
+    ) {
+
+
+        return [];
+
+
+    }
+
+
+    const start =
+        flow.path[
+            flow.path.length
+            -
+            2
+        ];
+
+
+    const end =
+        flow.path[
+            flow.path.length
+            -
+            1
+        ];
+
+
+    const lonScale =
+        Math.max(
+            0.2,
+            Math.cos(
+                end[1]
+                *
+                Math.PI
+                /
+                180
+            )
+        );
+
+
+    const dxMeters =
+        (
+            end[0]
+            -
+            start[0]
+        )
+        *
+        lonScale
+        *
+        111320;
+
+
+    const dyMeters =
+        (
+            end[1]
+            -
+            start[1]
+        )
+        *
+        111320;
+
+
+    const distanceMeters =
+        Math.hypot(
+            dxMeters,
+            dyMeters
+        );
+
+
+    if (
+        distanceMeters ===
+        0
+    ) {
+
+
+        return [];
+
+
+    }
+
+
+    const unitX =
+        dxMeters
+        /
+        distanceMeters;
+
+
+    const unitY =
+        dyMeters
+        /
+        distanceMeters;
+
+
+    const arrowLength =
+        currentZoom >=
+        10
+            ?
+            700
+            :
+            (
+                currentZoom >=
+                8
+                    ?
+                    1540
+                    :
+                    3080
+            );
+
+
+    const arrowWidth =
+        arrowLength
+        *
+        0.82;
+
+
+    const tipOffset =
+        arrowLength
+        *
+        0.25;
+
+
+    const tipX =
+        dxMeters
+        -
+        unitX
+        *
+        tipOffset;
+
+
+    const tipY =
+        dyMeters
+        -
+        unitY
+        *
+        tipOffset;
+
+
+    const baseX =
+        tipX
+        -
+        unitX
+        *
+        arrowLength;
+
+
+    const baseY =
+        tipY
+        -
+        unitY
+        *
+        arrowLength;
+
+
+    const perpendicularX =
+        -
+        unitY;
+
+
+    const perpendicularY =
+        unitX;
+
+
+    const toLonLat =
+        (
+            xMeters,
+            yMeters
+        ) => [
+
+            start[0]
+            +
+            xMeters
+            /
+            (
+                lonScale
+                *
+                111320
+            ),
+
+            start[1]
+            +
+            yMeters
+            /
+            111320
+
+        ];
+
+
+    return [
+
+        toLonLat(
+            tipX,
+            tipY
+        ),
+
+        toLonLat(
+            baseX,
+            baseY
+        ),
+
+        toLonLat(
+            baseX
+            +
+            perpendicularX
+            *
+            arrowWidth,
+            baseY
+            +
+            perpendicularY
+            *
+            arrowWidth
+        )
+
+    ];
+
+}
+
+
+// ==========================================================
+// ZIP LAYER
+// ==========================================================
+
+function makeZipLayer() {
+
+
+    return new GeoJsonLayer({
+
+
+        id:
+            "zip-boundaries",
+
+
+        data:
+            zipGeoJSON,
+
+
+        filled:
+            false,
+
+
+        stroked:
+            true,
+
+
+        getLineColor: [
+
+            52,
+            60,
+            68,
+            100
+
+        ],
+
+
+        getLineWidth:
+            0.48,
+
+
+        lineWidthUnits:
+            "pixels",
+
+
+        lineWidthMinPixels:
+            0.24,
+
+
+        pickable:
+            false,
+
+
+        autoHighlight:
+            false
+
+
+    });
+
+}
+
+
+// ==========================================================
+// ZIP AGGREGATE LAYER
+// ==========================================================
+
+function makeZipAggregateLayer(
+    data
+) {
+
+
+    const zipTotals =
+        getZipTotalsMap(
+            data
+        );
+
+
+    const zipScaleTotals =
+        getZipTotalsMap(
+            allData
+        );
+
+
+    const maxFlow =
+        getMaxFlow(
+            Array.from(
+                zipScaleTotals.values()
+            )
+        );
+
+
+    const zipTotalsSignature =
+        Array.from(
+            zipTotals.values()
+        )
+            .map(
+                d =>
+                    d.zipcode
+                    +
+                    ":"
+                    +
+                    d.flow_count
+            )
+            .sort()
+            .join(
+                "|"
+            );
+
+
+    return new GeoJsonLayer({
+
+
+        id:
+            "zip-aggregate-layer",
+
+
+        data:
+            zipGeoJSON,
+
+
+        filled:
+            true,
+
+
+        stroked:
+            true,
+
+
+        getFillColor:
+
+            feature => {
+
+
+                const record =
+                    zipTotals.get(
+                        getZipCode(
+                            feature
+                        )
+                    );
+
+
+                if (
+                    !record
+                ) {
+
+
+                    return [
+                        245,
+                        245,
+                        245,
+                        0
+                    ];
+
+
+                }
+
+
+                const intensity =
+                    Math.sqrt(
+                        record.flow_count
+                        /
+                        maxFlow
+                    );
+
+
+                return [
+
+                    Math.round(
+                        255
+                        -
+                        36
+                        *
+                        intensity
+                    ),
+
+                    Math.round(
+                        196
+                        -
+                        154
+                        *
+                        intensity
+                    ),
+
+                    Math.round(
+                        98
+                        -
+                        59
+                        *
+                        intensity
+                    ),
+
+                    Math.round(
+                        28
+                        +
+                        122
+                        *
+                        intensity
+                    )
+
+                ];
+
+
+            },
+
+
+        getLineColor: [
+
+            0,
+            0,
+            0,
+            82
+
+        ],
+
+
+        getLineWidth:
+            0.46,
+
+
+        lineWidthUnits:
+            "pixels",
+
+
+        lineWidthMinPixels:
+            0.24,
+
+
+        pickable:
+            true,
+
+
+        autoHighlight:
+            true,
+
+
+        updateTriggers: {
+
+            getFillColor: [
+
+                zipTotalsSignature,
+                maxFlow
+
+            ]
+
+        },
+
+
+        highlightColor: [
+
+            255,
+            176,
+            35,
+            80
+
+        ]
+
+
+    });
+
+}
+
+
+
+// ==========================================================
+// COUNTY LAYER
+// ==========================================================
+
+function makeCountyLayer() {
+
+
+    return new GeoJsonLayer({
+
+
+        id:
+            "county-boundaries",
+
+
+        data:
+            countyGeoJSON,
+
+
+        filled:
+            false,
+
+
+        stroked:
+            true,
+
+
+        getLineColor: [
+
+            0,
+            0,
+            0,
+            155
+
+        ],
+
+
+        getLineWidth:
+            0.72,
+
+
+        lineWidthUnits:
+            "pixels",
+
+
+        lineWidthMinPixels:
+            0.65,
+
+
+        pickable:
+            false,
+
+
+        autoHighlight:
+            false
+
+
+    });
+
+}
+
+
+
+// ==========================================================
+// COUNTY AGGREGATE LAYER
+// ==========================================================
+
+function makeCountyAggregateLayer(
+    data
+) {
+
+
+    const countyTotals =
+        getCountyTotalsMap(
+            data
+        );
+
+
+    const countyScaleTotals =
+        getCountyTotalsMap(
+            allData
+        );
+
+
+    const maxFlow =
+        getMaxFlow(
+            Array.from(
+                countyScaleTotals.values()
+            )
+        );
+
+
+    const countyTotalsSignature =
+        Array.from(
+            countyTotals.values()
+        )
+            .map(
+                d =>
+                    d.county
+                    +
+                    ":"
+                    +
+                    d.flow_count
+            )
+            .sort()
+            .join(
+                "|"
+            );
+
+
+    return new GeoJsonLayer({
+
+
+        id:
+            "county-aggregate-layer",
+
+
+        data:
+            countyGeoJSON,
+
+
+        filled:
+            true,
+
+
+        stroked:
+            true,
+
+
+        getFillColor:
+
+            feature => {
+
+
+                const record =
+                    countyTotals.get(
+                        getCountyName(
+                            feature
+                        )
+                    );
+
+
+                if (
+                    !record
+                ) {
+
+
+                    return [
+                        245,
+                        245,
+                        245,
+                        0
+                    ];
+
+
+                }
+
+
+                const intensity =
+                    Math.sqrt(
+                        record.flow_count
+                        /
+                        maxFlow
+                    );
+
+
+                return [
+
+                    Math.round(
+                        255
+                        -
+                        36
+                        *
+                        intensity
+                    ),
+
+                    Math.round(
+                        196
+                        -
+                        154
+                        *
+                        intensity
+                    ),
+
+                    Math.round(
+                        98
+                        -
+                        59
+                        *
+                        intensity
+                    ),
+
+                    Math.round(
+                        28
+                        +
+                        112
+                        *
+                        intensity
+                    )
+
+                ];
+
+
+            },
+
+
+        getLineColor: [
+
+            0,
+            0,
+            0,
+            120
+
+        ],
+
+
+        getLineWidth:
+            0.85,
+
+
+        lineWidthUnits:
+            "pixels",
+
+
+        lineWidthMinPixels:
+            0.42,
+
+
+        pickable:
+            true,
+
+
+        autoHighlight:
+            true,
+
+
+        updateTriggers: {
+
+            getFillColor: [
+
+                countyTotalsSignature,
+                maxFlow
+
+            ]
+
+        },
+
+
+        highlightColor: [
+
+            255,
+            176,
+            35,
+            80
+
+        ]
+
+
+    });
+
+}
+
+
+// ==========================================================
+// DESTINATION BUBBLES
+// ==========================================================
+
+function makeDestinationBubbleLayer(
+    data
+) {
+
+
+    const destinations =
+        buildClusteredDestinationData(
+            data
+        );
+
+
+    const destinationScale =
+        buildClusteredDestinationData(
+            allData
+        );
+
+
+    const maxFlow =
+        getMaxFlow(
+            destinationScale
+        );
+
+
+    const destinationSignature =
+        destinations
+            .map(
+                d =>
+                    d.destination
+                    +
+                    ":"
+                    +
+                    d.flow_count
+            )
+            .sort()
+            .join(
+                "|"
+            );
+
+
+    return new ScatterplotLayer({
+
+
+        id:
+            "destination-bubbles",
+
+
+        data:
+            destinations,
+
+
+        getPosition:
+
+            d => [
+
+                d.destination_lon,
+                d.destination_lat
+
+            ],
+
+
+        getRadius:
+
+            d =>
+                900
+                +
+                9500
+                *
+                Math.sqrt(
+                    d.flow_count
+                    /
+                    maxFlow
+                ),
+
+
+        radiusUnits:
+            "meters",
+
+
+        radiusMinPixels:
+            6,
+
+
+        radiusMaxPixels:
+            38,
+
+
+        getFillColor: [
+
+            219,
+            42,
+            39,
+            145
+
+        ],
+
+
+        getLineColor: [
+
+            255,
+            255,
+            255,
+            220
+
+        ],
+
+
+        lineWidthUnits:
+            "pixels",
+
+
+        getLineWidth:
+            1.2,
+
+
+        pickable:
+            true,
+
+
+        autoHighlight:
+            true,
+
+
+        updateTriggers: {
+
+            getRadius: [
+
+                destinationSignature,
+                maxFlow
+
+            ]
+
+        },
+
+
+        highlightColor: [
+
+            255,
+            176,
+            35,
+            90
+
+        ]
+
+
+    });
+
+}
+
+
+function makeDestinationSurveyLabelLayer(
+    data
+) {
+
+
+    const destinations =
+        buildClusteredDestinationData(
+            data
+        );
+
+
+    const destinationSignature =
+        destinations
+            .map(
+                d =>
+                d.destination
+                +
+                ":"
+                +
+                d.flow_count
+            )
+            .sort()
+            .join(
+                "|"
+            );
+
+
+    return new TextLayer({
+
+
+        id:
+            "destination-survey-labels",
+
+
+        data:
+            destinations,
+
+
+        getPosition:
+            d => [
+
+                d.destination_lon,
+                d.destination_lat
+
+            ],
+
+
+        getText:
+            d =>
+                d.flow_count.toLocaleString(),
+
+
+        getSize:
+            12,
+
+
+        sizeUnits:
+            "pixels",
+
+
+        getColor: [
+
+            255,
+            255,
+            255,
+            245
+
+        ],
+
+
+        getTextAnchor:
+            "middle",
+
+
+        getAlignmentBaseline:
+            "center",
+
+
+        fontFamily:
+            "Arial, sans-serif",
+
+
+        fontWeight:
+            700,
+
+
+        billboard:
+            true,
+
+
+        updateTriggers: {
+
+            getText: [
+
+                destinationSignature
+
+            ],
+
+            getPosition: [
+
+                destinationSignature
+
+            ]
+
+        },
+
+
+        fontSettings: {
+
+            sdf:
+                true,
+
+            fontSize:
+                64,
+
+            buffer:
+                4
+
+        },
+
+
+        outlineWidth:
+            0.15,
+
+
+        outlineColor: [
+
+            92,
+            0,
+            12,
+            230
+
+        ],
+
+
+        pickable:
+            false
+
+
+    });
+
+}
+
+
+// ==========================================================
+// ZIP ORIGIN BUBBLES
+// ==========================================================
+
+function makeZipBubbleLayer(
+    data
+) {
+
+
+    const zips =
+        aggregateZipOrigins(
+            data
+        );
+
+
+    const maxFlow =
+        getMaxFlow(
+            zips
+        );
+
+
+    return new ScatterplotLayer({
+
+
+        id:
+            "zip-origin-bubbles",
+
+
+        data:
+            zips,
+
+
+        getPosition:
+
+            d => [
+
+                d.origin_lon,
+                d.origin_lat
+
+            ],
+
+
+        getRadius:
+
+            d =>
+                700
+                +
+                7000
+                *
+                Math.sqrt(
+                    d.flow_count
+                    /
+                    maxFlow
+                ),
+
+
+        radiusUnits:
+            "meters",
+
+
+        radiusMinPixels:
+            5,
+
+
+        radiusMaxPixels:
+            32,
+
+
+        getFillColor: [
+
+            246,
+            181,
+            89,
+            125
+
+        ],
+
+
+        getLineColor: [
+
+            255,
+            255,
+            255,
+            210
+
+        ],
+
+
+        lineWidthUnits:
+            "pixels",
+
+
+        getLineWidth:
+            1,
+
+
+        pickable:
+            false,
+
+
+        autoHighlight:
+            false
+
+
+    });
+
+}
+
+
+// ==========================================================
+// COUNTY LABELS
+// ==========================================================
+
+function makeCountyLabelLayer() {
+
+
+    return new TextLayer({
+
+
+        id:
+            "county-labels",
+
+
+        data:
+            countyLabelData,
+
+
+        getPosition:
+            d =>
+                d.position,
+
+
+        getText:
+            d =>
+                d.name,
+
+
+        getSize:
+            13,
+
+
+        sizeUnits:
+            "pixels",
+
+
+        getColor: [
+
+            138,
+            148,
+            158,
+            160
+
+        ],
+
+
+        getTextAnchor:
+            "middle",
+
+
+        getAlignmentBaseline:
+            "center",
+
+
+        fontFamily:
+            "Arial, sans-serif",
+
+
+        fontWeight:
+            500,
+
+
+        billboard:
+            true,
+
+
+        fontSettings: {
+
+            sdf:
+                true,
+
+            fontSize:
+                64,
+
+            buffer:
+                4
+
+        },
+
+
+        outlineWidth:
+            0.05,
+
+
+        outlineColor: [
+
+            6,
+            9,
+            12,
+            205
+
+        ],
+
+
+        pickable:
+            false
+
+
+    });
+
+}
+
+
+
+// ==========================================================
+// FLOWMAP PATH LAYER
+// ==========================================================
+
+function makeFlowmapPathLayer(
+    data
+) {
+
+
+    const flowmapData =
+        getFlowmapRenderData(
+            data
+        );
+
+
+    const locationLookup =
+        new Map(
+
+            flowmapData.locations.map(
+
+                location => [
+
+                    location.id,
+                    location
+
+                ]
+
+            )
+
+        );
+
+
+    const maxFlow =
+        getMaxFlow(
+            flowmapData.flows.map(
+
+                flow => ({
+
+                    flow_count:
+                        flow.count
+
+                })
+
+            )
+        );
+
+
+    const paths =
+        flowmapData.flows.map(
+
+            flow => ({
+
+                ...flow,
+
+                originLabel:
+                    (
+                        locationLookup.get(
+                            flow.origin
+                        )
+                        ||
+                        {}
+                    ).name
+                    ||
+                    String(
+                        flow.origin
+                        ||
+                        ""
+                    ).replace(
+                        /^origin:/,
+                        ""
+                    ),
+
+                destinationLabel:
+                    (
+                        locationLookup.get(
+                            flow.destination
+                        )
+                        ||
+                        {}
+                    ).name
+                    ||
+                    String(
+                        flow.destination
+                        ||
+                        ""
+                    ).replace(
+                        /^destination:/,
+                        ""
+                    ),
+
+                path:
+                    getFlowCurvePath(
+                        flow,
+                        locationLookup
+                    )
+
+            })
+
+        ).filter(
+
+            flow =>
+                flow.path.length
+
+        ).sort(
+
+            (
+                a,
+                b
+            ) =>
+
+                a.count
+                -
+                b.count
+
+        );
+
+
+    return new PathLayer({
+
+
+        id:
+            "od-flow-layer",
+
+
+        data:
+            paths,
+
+
+        getPath:
+            d =>
+                d.path,
+
+
+        getWidth:
+
+            d =>
+
+                Math.log1p(
+
+                    Number(
+                    d.count
+                    ||
+                    1
+                )
+
+                )
+
+                *
+                1.85,
+
+
+        widthUnits:
+            "pixels",
+
+
+        widthMinPixels:
+            0.35,
+
+
+        widthMaxPixels:
+            9.5,
+
+
+        getColor:
+
+            d =>
+                getFlowConnectionColor(
+                    d,
+                    maxFlow
+                ),
+
+
+        pickable:
+            true,
+
+
+        autoHighlight:
+            true,
+
+
+        highlightColor: [
+
+            255,
+            255,
+            255,
+            120
+
+        ]
+
+
+    });
+
+}
+
+
+function makeFlowmapArrowLayer(
+    data
+) {
+
+
+    const flowmapData =
+        getFlowmapRenderData(
+            data
+        );
+
+
+    const locationLookup =
+        new Map(
+
+            flowmapData.locations.map(
+
+                location => [
+
+                    location.id,
+                    location
+
+                ]
+
+            )
+
+        );
+
+
+    const maxFlow =
+        getMaxFlow(
+            flowmapData.flows.map(
+
+                flow => ({
+
+                    flow_count:
+                        flow.count
+
+                })
+
+            )
+        );
+
+
+    const markers =
+        flowmapData.flows.map(
+
+            flow => {
+
+
+                const path =
+                    getFlowCurvePath(
+                        flow,
+                        locationLookup
+                    );
+
+
+                if (
+                    path.length < 2
+                ) {
+
+
+                    return null;
+
+
+                }
+
+
+                const start =
+                    path[0];
+
+
+                const end =
+                    path[
+                        path.length
+                        -
+                        1
+                    ];
+
+
+                const lonScale =
+                    Math.max(
+                        0.2,
+                        Math.cos(
+                            end[1]
+                            *
+                            Math.PI
+                            /
+                            180
+                        )
+                    );
+
+
+                const dxMeters =
+                    (
+                        end[0]
+                        -
+                        start[0]
+                    )
+                    *
+                    lonScale
+                    *
+                    111320;
+
+
+                const dyMeters =
+                    (
+                        end[1]
+                        -
+                        start[1]
+                    )
+                    *
+                    111320;
+
+
+                const distanceMeters =
+                    Math.hypot(
+                        dxMeters,
+                        dyMeters
+                    );
+
+
+                if (
+                    distanceMeters < 800
+                ) {
+
+
+                    return null;
+
+
+                }
+
+
+                const markerRatio =
+                    0.82;
+
+
+                return {
+
+                    ...flow,
+
+                    position: [
+
+                        start[0]
+                        +
+                        (
+                            end[0]
+                            -
+                            start[0]
+                        )
+                        *
+                        markerRatio,
+
+                        start[1]
+                        +
+                        (
+                            end[1]
+                            -
+                            start[1]
+                        )
+                        *
+                        markerRatio
+
+                    ],
+
+                    angle:
+                        Math.atan2(
+                            dyMeters,
+                            dxMeters
+                        )
+                        *
+                        180
+                        /
+                        Math.PI
+
+                };
+
+
+            }
+
+        ).filter(
+            marker =>
+                marker
+        );
+
+
+    return [
+
+
+        new TextLayer({
+
+
+            id:
+                "od-flow-direction-markers",
+
+
+            data:
+                markers,
+
+
+            getPosition:
+                d =>
+                    d.position,
+
+
+            getText:
+                ">",
+
+
+            getSize:
+                17,
+
+
+            sizeUnits:
+                "pixels",
+
+
+            getAngle:
+                d =>
+                    d.angle,
+
+
+            getColor:
+                d =>
+                    getFlowConnectionColor(
+                        d,
+                        maxFlow
+                    ),
+
+
+            getTextAnchor:
+                "middle",
+
+
+            getAlignmentBaseline:
+                "center",
+
+
+            fontFamily:
+                "Arial, sans-serif",
+
+
+            fontWeight:
+                800,
+
+
+            billboard:
+                true,
+
+
+            fontSettings: {
+
+                sdf:
+                    true,
+
+                fontSize:
+                    64,
+
+                buffer:
+                    4
+
+            },
+
+
+            outlineWidth:
+                0.08,
+
+
+            outlineColor: [
+
+                255,
+                255,
+                255,
+                220
+
+            ],
+
+
+            pickable:
+                false
+
+
+        })
+
+
+    ];
+
+
+    const arrows =
+        flowmapData.flows.map(
+
+            flow => ({
+
+                ...flow,
+
+                path:
+                    getFlowCurvePath(
+                        flow,
+                        locationLookup
+                    )
+
+            })
+
+        ).map(
+
+            flow => ({
+
+                ...flow,
+
+                arrowPath:
+                    getFlowArrowPath(
+                        flow
+                    ),
+
+                arrowPolygon:
+                    getFlowArrowHeadPolygon(
+                        flow
+                    )
+
+            })
+
+        ).filter(
+
+            flow =>
+                flow.arrowPath.length
+                &&
+                flow.arrowPolygon.length
+
+        );
+
+
+    return [
+
+
+        new PolygonLayer({
+
+
+            id:
+                "od-flow-arrow-fill-layer",
+
+
+            data:
+                arrows,
+
+
+            getPolygon:
+                d =>
+                    d.arrowPolygon,
+
+
+            getFillColor:
+                d =>
+                    getFlowConnectionColor(
+                        d,
+                        maxFlow
+                    ),
+
+
+            filled:
+                true,
+
+
+            stroked:
+                false,
+
+
+            pickable:
+                false,
+
+
+            autoHighlight:
+                false
+
+
+        }),
+
+
+        new PathLayer({
+
+
+        id:
+            "od-flow-arrow-layer",
+
+
+        data:
+            arrows,
+
+
+        getPath:
+            d =>
+                d.arrowPath,
+
+
+        getWidth:
+
+            d =>
+
+                Math.log1p(
+
+                    Number(
+                        d.count
+                        ||
+                        1
+                    )
+
+                )
+
+                *
+                1.35,
+
+
+        widthUnits:
+            "pixels",
+
+
+        widthMinPixels:
+            1.15,
+
+
+        widthMaxPixels:
+            5.5,
+
+
+        getColor:
+            d =>
+                getFlowConnectionColor(
+                    d,
+                    maxFlow
+                ),
+
+
+        capRounded:
+            true,
+
+
+        jointRounded:
+            true,
+
+
+        pickable:
+            false,
+
+
+        autoHighlight:
+            false
+
+
+        })
+
+
+    ];
+
+}
+
+
+// ==========================================================
+// FLOWMAP LOCATION LAYER
+// ==========================================================
+
+function makeFlowmapLocationLayer(
+    data
+) {
+
+
+    const flowmapData =
+        getFlowmapRenderData(
+            data
+        );
+
+
+    const locations =
+        flowmapData.locations.map(
+
+            location => ({
+
+                ...location,
+
+                total:
+                    location.incoming
+                    +
+                    location.outgoing
+
+            })
+
+        );
+
+
+    const maxTotal =
+        getMaxFlow(
+            locations.map(
+
+                location => ({
+
+                    flow_count:
+                        location.total
+
+                })
+
+            )
+        );
+
+
+    const getLocationOpacity =
+
+        d =>
+            Math.round(
+                18
+                +
+                212
+                *
+                Math.pow(
+                    d.total
+                    /
+                    maxTotal,
+                    0.72
+                )
+            );
+
+
+    const getOutlineOpacity =
+
+        d =>
+            Math.min(
+                255,
+                getLocationOpacity(
+                    d
+                )
+                +
+                38
+            );
+
+
+    const getOutgoingOpacity =
+
+        d =>
+            Math.min(
+                255,
+                Math.max(
+                    225,
+                    getLocationOpacity(
+                        d
+                    )
+                    +
+                    96
+                )
+            );
+
+
+    const getBalanceRatio =
+
+        d => {
+
+
+            const total =
+                d.incoming
+                +
+                d.outgoing;
+
+
+            return total
+                ?
+                (
+                    d.incoming
+                    -
+                    d.outgoing
+                )
+                /
+                total
+                :
+                0;
+
+
+        };
+
+
+    const selectedIds =
+        new Set(
+            selectedMapLocation
+            ?
+            selectedMapLocation.sourceIds
+            :
+            []
+        );
+
+
+    const isSelectedLocation =
+
+        d =>
+            Boolean(
+                d.sourceIds
+                &&
+                d.sourceIds.some(
+                    id =>
+                        selectedIds.has(
+                            id
+                        )
+                )
+            );
+
+
+    return new ScatterplotLayer({
+
+
+        id:
+            "flowmap-locations",
+
+
+        data:
+            locations,
+
+
+        filled:
+            true,
+
+
+        stroked:
+            true,
+
+
+        getPosition:
+
+            d => [
+
+                d.lon,
+                d.lat
+
+            ],
+
+
+        getRadius:
+
+            d =>
+                260
+                +
+                3600
+                *
+                Math.sqrt(
+                    d.total
+                    /
+                    maxTotal
+                )
+                *
+                (
+                    isSelectedLocation(
+                        d
+                    )
+                        ?
+                        1.25
+                        :
+                        1
+                ),
+
+
+        radiusUnits:
+            "meters",
+
+
+        radiusMinPixels:
+            4,
+
+
+        radiusMaxPixels:
+            15,
+
+
+        getFillColor:
+
+            d => {
+
+
+                const balanceRatio =
+                    getBalanceRatio(
+                        d
+                    );
+
+
+                const opacity =
+                    Math.max(
+                        isSelectedLocation(
+                            d
+                        )
+                            ?
+                            230
+                            :
+                            0,
+                        getLocationOpacity(
+                            d
+                        )
+                    );
+
+
+                if (
+                    balanceRatio < 0
+                ) {
+
+
+                    return [
+                        255,
+                        187,
+                        32,
+                        isSelectedLocation(
+                            d
+                        )
+                            ?
+                            255
+                            :
+                            getOutgoingOpacity(
+                                d
+                            )
+                    ];
+
+
+                }
+
+
+                return [
+                    230,
+                    35,
+                    45,
+                    opacity
+                ];
+
+
+            },
+
+
+        getLineColor:
+
+            d => {
+
+
+                const balanceRatio =
+                    getBalanceRatio(
+                        d
+                    );
+
+
+                if (
+                    balanceRatio < 0
+                ) {
+
+
+                    const outgoingStrength =
+                        Math.min(
+                            1,
+                            Math.abs(
+                                balanceRatio
+                            )
+                        );
+
+
+                    return [
+                        Math.round(
+                            112
+                            -
+                            48
+                            *
+                            outgoingStrength
+                        ),
+                        Math.round(
+                            44
+                            -
+                            24
+                            *
+                            outgoingStrength
+                        ),
+                        Math.round(
+                            0
+                            +
+                            0
+                            *
+                            outgoingStrength
+                        ),
+                        isSelectedLocation(
+                            d
+                        )
+                            ?
+                            255
+                            :
+                            getOutgoingOpacity(
+                                d
+                            )
+                    ];
+
+
+                }
+
+
+                const incomingStrength =
+                    Math.min(
+                        1,
+                        balanceRatio
+                    );
+
+
+                return [
+                    Math.round(
+                        230
+                        -
+                        138
+                        *
+                        incomingStrength
+                    ),
+                    Math.round(
+                        35
+                        -
+                        35
+                        *
+                        incomingStrength
+                    ),
+                    Math.round(
+                        45
+                        -
+                        33
+                        *
+                        incomingStrength
+                    ),
+                    isSelectedLocation(
+                        d
+                    )
+                        ?
+                        255
+                        :
+                        getOutlineOpacity(
+                            d
+                        )
+                ];
+
+
+            },
+
+
+        lineWidthUnits:
+            "pixels",
+
+
+        lineWidthMinPixels:
+            2.2,
+
+
+        lineWidthMaxPixels:
+            6.5,
+
+
+        getLineWidth:
+            d => {
+
+
+                const balanceRatio =
+                    getBalanceRatio(
+                        d
+                    );
+
+
+                const balanceStrength =
+                    Math.abs(
+                        balanceRatio
+                    );
+
+
+                const baseWidth =
+                    balanceRatio < 0
+                        ?
+                        (
+                            2.8
+                            +
+                            2.2
+                            *
+                            balanceStrength
+                        )
+                        :
+                        (
+                            1.4
+                            +
+                            2.4
+                            *
+                            balanceStrength
+                        );
+
+
+                return baseWidth
+                *
+                (
+                    isSelectedLocation(
+                        d
+                    )
+                        ?
+                        1.45
+                        :
+                        1
+                );
+
+
+            },
+
+
+        pickable:
+            true,
+
+
+        autoHighlight:
+            true
+
+
+    });
+
+}
+
+
+// ==========================================================
+// FLOWMAP-STYLE LOCATION SYMBOLS
+// ==========================================================
+
+function makeFlowmapLocationSymbolLayers(
+    data
+) {
+
+
+    const flowmapData =
+        getFlowmapRenderData(
+            data
+        );
+
+
+    const locations =
+        flowmapData.locations.map(
+
+            location => ({
+
+                ...location,
+
+                total:
+                    location.incoming
+                    +
+                    location.outgoing
+
+            })
+
+        );
+
+
+    const maxTotal =
+        getMaxFlow(
+            locations.map(
+
+                location => ({
+
+                    flow_count:
+                        location.total
+
+                })
+
+            )
+        );
+
+
+    const maxIncoming =
+        Math.max(
+            1,
+            ...locations.map(
+                d =>
+                    Number(
+                        d.incoming
+                        ||
+                        0
+                    )
+            )
+        );
+
+
+    const maxOutgoing =
+        Math.max(
+            1,
+            ...locations.map(
+                d =>
+                    Number(
+                        d.outgoing
+                        ||
+                        0
+                    )
+            )
+        );
+
+
+    const selectedIds =
+        new Set(
+            selectedMapLocation
+            ?
+            selectedMapLocation.sourceIds
+            :
+            []
+        );
+
+
+    const isSelectedLocation =
+
+        d =>
+            Boolean(
+                d.sourceIds
+                &&
+                d.sourceIds.some(
+                    id =>
+                        selectedIds.has(
+                            id
+                        )
+                )
+            );
+
+
+    const getTotalRadius =
+
+        d =>
+            320
+            +
+            3900
+            *
+            Math.sqrt(
+                d.total
+                /
+                maxTotal
+            )
+            *
+            (
+                isSelectedLocation(
+                    d
+                )
+                    ?
+                    1.22
+                    :
+                    1
+            );
+
+
+    const getIncomingRadius =
+
+        d =>
+            260
+            +
+            3600
+            *
+            Math.sqrt(
+                Number(
+                    d.incoming
+                    ||
+                    0
+                )
+                /
+                maxIncoming
+            );
+
+
+    const getOutgoingRadius =
+
+        d =>
+            260
+            +
+            3600
+            *
+            Math.sqrt(
+                Number(
+                    d.outgoing
+                    ||
+                    0
+                )
+                /
+                maxOutgoing
+            );
+
+
+    const getTotalOpacity =
+
+        d =>
+            Math.round(
+                58
+                +
+                145
+                *
+                Math.pow(
+                    d.total
+                    /
+                    maxTotal,
+                    0.70
+                )
+            );
+
+
+    const commonPosition =
+        d => [
+
+            d.lon,
+            d.lat
+
+        ];
+
+
+    return [
+
+
+        new ScatterplotLayer({
+
+
+            id:
+                "flowmap-location-total-fill",
+
+
+            data:
+                locations,
+
+
+            filled:
+                true,
+
+
+            stroked:
+                false,
+
+
+            getPosition:
+                commonPosition,
+
+
+            getRadius:
+                getTotalRadius,
+
+
+            radiusUnits:
+                "meters",
+
+
+            radiusMinPixels:
+                4,
+
+
+            radiusMaxPixels:
+                18,
+
+
+            getFillColor:
+
+                d => [
+
+                    230,
+                    35,
+                    45,
+                    isSelectedLocation(
+                        d
+                    )
+                        ?
+                        230
+                        :
+                        getTotalOpacity(
+                            d
+                        )
+
+                ],
+
+
+            pickable:
+                false
+
+
+        }),
+
+
+        new ScatterplotLayer({
+
+
+            id:
+                "flowmap-location-outgoing-ring",
+
+
+            data:
+                locations.filter(
+                    d =>
+                        d.outgoing > 0
+                ),
+
+
+            filled:
+                false,
+
+
+            stroked:
+                true,
+
+
+            getPosition:
+                commonPosition,
+
+
+            getRadius:
+                getOutgoingRadius,
+
+
+            radiusUnits:
+                "meters",
+
+
+            radiusMinPixels:
+                5,
+
+
+            radiusMaxPixels:
+                20,
+
+
+            getLineColor:
+
+                d => [
+
+                    255,
+                    176,
+                    35,
+                    isSelectedLocation(
+                        d
+                    )
+                        ?
+                        255
+                        :
+                        235
+
+                ],
+
+
+            lineWidthUnits:
+                "pixels",
+
+
+            lineWidthMinPixels:
+                2.6,
+
+
+            lineWidthMaxPixels:
+                5.6,
+
+
+            getLineWidth:
+
+                d =>
+                    (
+                        2.6
+                        +
+                        2.0
+                        *
+                        Math.sqrt(
+                            d.outgoing
+                            /
+                            maxOutgoing
+                        )
+                    )
+                    *
+                    (
+                        isSelectedLocation(
+                            d
+                        )
+                            ?
+                            1.25
+                            :
+                            1
+                    ),
+
+
+            pickable:
+                false
+
+
+        }),
+
+
+        new ScatterplotLayer({
+
+
+            id:
+                "flowmap-location-incoming-ring",
+
+
+            data:
+                locations.filter(
+                    d =>
+                        d.incoming > 0
+                ),
+
+
+            filled:
+                false,
+
+
+            stroked:
+                true,
+
+
+            getPosition:
+                commonPosition,
+
+
+            getRadius:
+                getIncomingRadius,
+
+
+            radiusUnits:
+                "meters",
+
+
+            radiusMinPixels:
+                3.5,
+
+
+            radiusMaxPixels:
+                17,
+
+
+            getLineColor:
+
+                d => [
+
+                    92,
+                    0,
+                    16,
+                    isSelectedLocation(
+                        d
+                    )
+                        ?
+                        255
+                        :
+                        238
+
+                ],
+
+
+            lineWidthUnits:
+                "pixels",
+
+
+            lineWidthMinPixels:
+                2.1,
+
+
+            lineWidthMaxPixels:
+                5.2,
+
+
+            getLineWidth:
+
+                d =>
+                    (
+                        2.1
+                        +
+                        1.8
+                        *
+                        Math.sqrt(
+                            d.incoming
+                            /
+                            maxIncoming
+                        )
+                    )
+                    *
+                    (
+                        isSelectedLocation(
+                            d
+                        )
+                            ?
+                            1.25
+                            :
+                            1
+                    ),
+
+
+            pickable:
+                false
+
+
+        }),
+
+
+        new ScatterplotLayer({
+
+
+            id:
+                "flowmap-locations",
+
+
+            data:
+                locations,
+
+
+            filled:
+                true,
+
+
+            stroked:
+                false,
+
+
+            getPosition:
+                commonPosition,
+
+
+            getRadius:
+                getTotalRadius,
+
+
+            radiusUnits:
+                "meters",
+
+
+            radiusMinPixels:
+                6,
+
+
+            radiusMaxPixels:
+                22,
+
+
+            getFillColor: [
+
+                0,
+                0,
+                0,
+                0
+
+            ],
+
+
+            pickable:
+                true,
+
+
+            autoHighlight:
+                false
+
+
+        })
+
+
+    ];
+
+}
+
+
+
+// ==========================================================
+// INITIALIZE MAP
+// ==========================================================
+
+function initializeMap() {
+
+
+    deckgl =
+
+        new DeckGL({
+
+
+            container:
+                "map",
+
+
+            mapStyle:
+
+                "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+
+
+            initialViewState: {
+
+
+                longitude:
+                    -95.37,
+
+
+                latitude:
+                    29.76,
+
+
+                zoom:
+                    7.2,
+
+
+                pitch:
+                    0,
+
+
+                bearing:
+                    0
+
+
+            },
+
+
+            controller: {
+
+                dragRotate:
+                    false,
+
+                touchRotate:
+                    false,
+
+                keyboard:
+                    false
+
+            },
+
+
+            onViewStateChange:
+
+                ({
+                    viewState
+                }) => {
+
+
+                    const nextZoom =
+                        viewState
+                        &&
+                        Number.isFinite(
+                            viewState.zoom
+                        )
+                            ?
+                            viewState.zoom
+                            :
+                            currentZoom;
+
+
+                    if (
+                        Math.abs(
+                            nextZoom
+                            -
+                            currentZoom
+                        )
+                        <
+                        0.15
+                    ) {
+
+
+                        return;
+
+
+                    }
+
+
+                    currentZoom =
+                        nextZoom;
+
+
+                    if (
+                        getSelectedViewMode()
+                        ===
+                        "flows"
+                        ||
+                        getSelectedViewMode()
+                        ===
+                        "destination"
+                    ) {
+
+
+                        updateMapLayers(
+                            currentFilteredData
+                        );
+
+
+                    }
+
+
+                },
+
+
+            onClick:
+
+                ({
+                    object,
+                    layer,
+                    x,
+                    y
+                }) => {
+
+
+                    if (
+                        !object
+                        ||
+                        !layer
+                    ) {
+
+
+                        return;
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "county-aggregate-layer"
+                    ) {
+
+
+                        const county =
+                            getCountyName(
+                                object
+                            );
+
+
+                        const record =
+                            getCountyTotalsMap(
+                                currentFilteredData
+                            ).get(
+                                county
+                            );
+
+
+                        selectedMapLocation =
+                            null;
+
+
+                        showCountyPopup(
+                            county,
+                            record,
+                            x,
+                            y
+                        );
+
+
+                        return;
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "zip-aggregate-layer"
+                    ) {
+
+
+                        const zip =
+                            getZipCode(
+                                object
+                            );
+
+
+                        const record =
+                            getZipTotalsMap(
+                                currentFilteredData
+                            ).get(
+                                zip
+                            );
+
+
+                        selectedMapLocation =
+                            null;
+
+
+                        showZipPopup(
+                            zip,
+                            record,
+                            x,
+                            y
+                        );
+
+
+                        return;
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "od-flow-layer"
+                    ) {
+
+
+                        selectedMapLocation =
+                            null;
+
+
+                        document.getElementById(
+                            "locationFilter"
+                        ).value =
+                            "ALL";
+
+
+                        showFlowConnectionPopup(
+                            object,
+                            x,
+                            y
+                        );
+
+
+                        return;
+
+
+                    }
+
+
+                    if (
+                        layer.id !==
+                        "flowmap-locations"
+                    ) {
+
+
+                        return;
+
+
+                    }
+
+
+                    const clickedSourceIds =
+                        object.sourceIds
+                        ||
+                        [
+                            object.id
+                        ];
+
+
+                    const isSameMapSelection =
+                        selectedMapLocation
+                        &&
+                        selectedMapLocation.sourceIds
+                        &&
+                        selectedMapLocation.sourceIds.length ===
+                        clickedSourceIds.length
+                        &&
+                        selectedMapLocation.sourceIds.every(
+                            id =>
+                                clickedSourceIds.includes(
+                                    id
+                                )
+                        );
+
+
+                    if (
+                        isSameMapSelection
+                    ) {
+
+
+                        selectedMapLocation =
+                            null;
+
+
+                        hideSelectionPopup();
+
+
+                        document.getElementById(
+                            "locationFilter"
+                        ).value =
+                            "ALL";
+
+
+                        applyODFilters();
+
+
+                        return;
+
+
+                    }
+
+
+                    selectedMapLocation = {
+
+                        label:
+                            object.name,
+
+                        type:
+                            object.type,
+
+                        sourceIds:
+                            clickedSourceIds,
+
+                        x:
+                            x,
+
+                        y:
+                            y
+
+                    };
+
+
+                    document.getElementById(
+                        "locationFilter"
+                    ).value =
+                        "ALL";
+
+
+                    applyODFilters();
+
+
+                    showSelectionPopup(
+                        selectedMapLocation
+                    );
+
+
+                },
+
+
+            layers: [
+
+
+            ],
+
+
+
+            getTooltip:
+
+                ({
+                    object,
+                    layer
+                }) => {
+
+
+                    if (
+                        !object
+                        ||
+                        !layer
+                    ) {
+
+
+                        return null;
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "county-aggregate-layer"
+                    ) {
+
+
+                        const county =
+                            getCountyName(
+                                object
+                            );
+
+
+                        const record =
+                            getCountyTotalsMap(
+                                currentFilteredData
+                            ).get(
+                                county
+                            );
+
+
+                        return {
+
+
+                            html:
+
+                                "<b>County:</b> "
+                                +
+                                county
+                                +
+                                "<br><b>Survey Mentions:</b> "
+                                +
+                                (
+                                    record
+                                    ?
+                                    record.flow_count.toLocaleString()
+                                    :
+                                    "0"
+                                )
+
+
+                        };
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "zip-aggregate-layer"
+                    ) {
+
+
+                        const zip =
+                            getZipCode(
+                                object
+                            );
+
+
+                        const record =
+                            getZipTotalsMap(
+                                currentFilteredData
+                            ).get(
+                                zip
+                            );
+
+
+                        return {
+
+
+                            html:
+
+                                "<b>Origin ZIP / ZCTA:</b> "
+                                +
+                                zip
+                                +
+                                "<br><b>County:</b> "
+                                +
+                                (
+                                    record
+                                    ?
+                                    (
+                                        record.origin_county
+                                        ||
+                                        ""
+                                    )
+                                    :
+                                    ""
+                                )
+                                +
+                                "<br><b>Survey Mentions:</b> "
+                                +
+                                (
+                                    record
+                                    ?
+                                    record.flow_count.toLocaleString()
+                                    :
+                                    "0"
+                                )
+
+
+                        };
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "zip-boundaries"
+                    ) {
+
+
+                        const zip =
+                            getZipCode(
+                                object
+                            );
+
+
+                        return {
+
+
+                            html:
+
+                                "<b>ZIP / ZCTA:</b> "
+                                +
+                                zip
+
+
+                        };
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "county-boundaries"
+                    ) {
+
+
+                        return {
+
+
+                            html:
+
+                                "<b>County:</b> "
+                                +
+                                getCountyName(
+                                    object
+                                )
+
+
+                        };
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "destination-bubbles"
+                    ) {
+
+
+                        return {
+
+
+                            html:
+
+                                "<b>Destination:</b> "
+                                +
+                                object.destination
+                                +
+                                (
+                                    object.members
+                                    &&
+                                    object.members > 1
+                                        ?
+                                        "<br><b>Cluster size:</b> "
+                                        +
+                                        object.members.toLocaleString()
+                                        +
+                                        " destinations"
+                                        :
+                                        ""
+                                )
+                                +
+                                "<br><b>Survey Mentions:</b> "
+                                +
+                                object.flow_count.toLocaleString()
+                                +
+                                "<br><b>Origin ZIPs:</b> "
+                                +
+                                object.zipcodes.size.toLocaleString()
+                                +
+                                "<br><b>Origin Counties:</b> "
+                                +
+                                object.counties.size.toLocaleString()
+
+
+                        };
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "zip-origin-bubbles"
+                    ) {
+
+
+                        return {
+
+
+                            html:
+
+                                "<b>Origin ZIP:</b> "
+                                +
+                                object.zipcode
+                                +
+                                "<br><b>County:</b> "
+                                +
+                                (
+                                    object.origin_county
+                                    ||
+                                    ""
+                                )
+                                +
+                                "<br><b>Survey Mentions:</b> "
+                                +
+                                object.flow_count.toLocaleString()
+                                +
+                                "<br><b>Destinations:</b> "
+                                +
+                                object.destinations.size.toLocaleString()
+
+
+                        };
+
+
+                    }
+
+
+                    if (
+                        layer.id ===
+                        "od-flow-layer"
+                    ) {
+
+
+                        const html =
+                            "<b>From this location:</b> "
+                            +
+                            escapePopupHtml(
+                                object.originLabel
+                                ||
+                                object.origin
+                                ||
+                                ""
+                            )
+                            +
+                            "<br><b>To this location:</b> "
+                            +
+                            escapePopupHtml(
+                                object.destinationLabel
+                                ||
+                                object.destination
+                                ||
+                                ""
+                            )
+                            +
+                            "<br><b>Survey Mentions:</b> "
+                            +
+                            Number(
+                                object.count
+                                ??
+                                object.flow_count
+                                ??
+                                0
+                            ).toLocaleString();
+
+
+                        return {
+
+                            html:
+                                html
+
+                        };
+
+
+                    }
+
+
+                    return null;
+
+
+                }
+
+
+        });
+
+
+    updateMapLayers(
+        allData
+    );
+
+
+    updateODSummary(
+
+        allData,
+        "ALL",
+        "ALL",
+        "ALL",
+        "ALL"
+
+    );
+
+}
+
+
+
+// ==========================================================
+// UPDATE MAP
+// ==========================================================
+
+function updateMapLayers(
+    data
+) {
+
+
+    currentFilteredData =
+        data;
+
+
+    const viewMode =
+        getSelectedViewMode();
+
+
+    if (
+        viewMode !==
+        "flows"
+    ) {
+
+
+        hideSelectionPopup();
+
+
+    }
+
+
+    let layers = [];
+
+
+    if (
+        viewMode ===
+        "flows"
+    ) {
+
+
+        layers = [
+
+
+            makeZipLayer(),
+
+
+            makeCountyLayer(),
+
+
+            makeFlowmapPathLayer(
+                data
+            ),
+
+
+            ...makeFlowmapArrowLayer(
+                data
+            ),
+
+
+            ...makeFlowmapLocationSymbolLayers(
+                data
+            ),
+
+
+            makeCountyLabelLayer()
+
+
+        ];
+
+
+    }
+
+    else if (
+        viewMode ===
+        "zip"
+    ) {
+
+
+        layers = [
+
+
+            makeZipAggregateLayer(
+                data
+            ),
+
+
+            makeCountyLayer(),
+
+
+            makeCountyLabelLayer()
+
+
+        ];
+
+
+    }
+
+    else if (
+        viewMode ===
+        "destination"
+    ) {
+
+
+        layers = [
+
+
+            makeCountyLayer(),
+
+
+            makeDestinationBubbleLayer(
+                data
+            ),
+
+
+            makeDestinationSurveyLabelLayer(
+                data
+            ),
+
+
+            makeCountyLabelLayer()
+
+
+        ];
+
+
+    }
+
+    else {
+
+
+        layers = [
+
+
+            makeCountyAggregateLayer(
+                data
+            ),
+
+
+            makeCountyLabelLayer()
+
+
+        ];
+
+
+    }
+
+
+    deckgl.setProps({
+
+
+        layers:
+            layers
+
+
+    });
+
+
+    updateStatusText();
+
+}
+
+
+
+// ==========================================================
+// COMMON STATS
+// ==========================================================
+
+function getStats(
+    data
+) {
+
+
+    const totalMentions =
+
+        data.reduce(
+
+            (
+                sum,
+                d
+            ) =>
+
+                sum
+                +
+                Number(
+                    d.flow_count
+                    ||
+                    0
+                ),
+
+            0
+
+        );
+
+
+    const zipCount =
+
+        new Set(
+
+            data
+
+                .map(
+                    d =>
+                        d.zipcode
+                )
+
+                .filter(
+                    d => d
+                )
+
+        ).size;
+
+
+    const destinationCount =
+
+        new Set(
+
+            data
+
+                .map(
+                    d =>
+                        d.destination
+                )
+
+                .filter(
+                    d => d
+                )
+
+        ).size;
+
+
+    return {
+
+        totalMentions,
+        zipCount,
+        destinationCount
+
+    };
+
+}
+
+
+function updateStatusText() {
+
+
+    if (
+        !document.getElementById(
+            "status"
+        )
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    let statusText =
+        dataStatusText;
+
+
+    if (
+        getSelectedViewMode()
+        ===
+        "flows"
+    ) {
+
+
+        const renderData =
+            getFlowmapRenderData(
+                currentFilteredData
+            );
+
+
+        statusText +=
+            " &middot; "
+            +
+            (
+                getClusterCellSize() > 0
+                    ?
+                    "clustered"
+                    :
+                    "unclustered"
+            )
+            +
+            " Flowmap: "
+            +
+            renderData.locations.length.toLocaleString()
+            +
+            " locations / "
+            +
+            renderData.flows.length.toLocaleString()
+            +
+            " flows";
+
+
+    }
+
+
+    if (
+        selectedMapLocation
+    ) {
+
+
+        locationLabel =
+            "Map selection: "
+            +
+            (
+                selectedMapLocation.type
+                ||
+                "Location"
+            )
+            +
+            " "
+            +
+            (
+                selectedMapLocation.label
+                ||
+                ""
+            );
+
+
+    }
+
+
+    document.getElementById(
+        "status"
+    ).innerHTML =
+        statusText;
+
+}
+
+
+
+// ==========================================================
+// OD SUMMARY
+// ==========================================================
+
+function escapeHTML(
+    value
+) {
+
+
+    return String(
+        value
+        ||
+        ""
+    ).replace(
+        /[&<>"']/g,
+        character => ({
+
+            "&":
+                "&amp;",
+
+            "<":
+                "&lt;",
+
+            ">":
+                "&gt;",
+
+            "\"":
+                "&quot;",
+
+            "'":
+                "&#39;"
+
+        }[character])
+    );
+
+}
+
+
+function escapeAttribute(
+    value
+) {
+
+
+    return escapeHTML(
+        value
+    );
+
+}
+
+
+function getDestinationRankingData(
+    county,
+    destinationRegion
+) {
+
+
+    let rankingData =
+        allData.slice();
+
+
+    if (
+        county !==
+        "ALL"
+    ) {
+
+
+        rankingData =
+            rankingData.filter(
+
+                d =>
+                    String(
+                        d.origin_county
+                    )
+                    ===
+                    county
+
+            );
+
+
+    }
+
+
+    if (
+        destinationRegion !==
+        "ALL"
+    ) {
+
+
+        rankingData =
+            rankingData.filter(
+
+                d =>
+                    isDestinationInsideRegion(
+                        d
+                    )
+                    ===
+                    (
+                        destinationRegion ===
+                        "INSIDE"
+                    )
+
+            );
+
+
+    }
+
+
+    return aggregateDestinations(
+        rankingData
+    ).sort(
+        (
+            a,
+            b
+        ) =>
+            b.flow_count
+            -
+            a.flow_count
+            ||
+            String(
+                a.destination
+            ).localeCompare(
+                String(
+                    b.destination
+                )
+            )
+    );
+
+}
+
+
+function buildDestinationRankingHTML(
+    county,
+    destinationRegion
+) {
+
+
+    const destinations =
+        getDestinationRankingData(
+            county,
+            destinationRegion
+        );
+
+
+    if (
+        !destinations.length
+    ) {
+
+
+        return (
+            "<div class='destination-ranking'>"
+            +
+            "<div class='destination-ranking-title'>Destinations by Survey Mentions</div>"
+            +
+            "<div>No destinations found for the selected origin county.</div>"
+            +
+            "</div>"
+        );
+
+
+    }
+
+
+    return (
+        "<div class='destination-ranking'>"
+        +
+        "<div class='destination-ranking-title'>Destinations by Survey Mentions</div>"
+        +
+        "<div class='destination-ranking-list'>"
+        +
+        destinations.map(
+            (
+                destination,
+                index
+            ) =>
+                "<div class='destination-ranking-row'>"
+                +
+                "<span class='destination-ranking-name'>"
+                +
+                (
+                    index
+                    +
+                    1
+                )
+                +
+                ". "
+                +
+                escapeHTML(
+                    destination.destination
+                )
+                +
+                "</span>"
+                +
+                "<span class='destination-ranking-value'>"
+                +
+                destination.flow_count.toLocaleString()
+                +
+                "</span>"
+                +
+                "</div>"
+        ).join(
+            ""
+        )
+        +
+        "</div>"
+        +
+        "</div>"
+    );
+
+}
+
+
+function updateTopDestinationsChart(
+    data = null
+) {
+
+
+    const chart =
+        document.getElementById(
+            "topDestinationsChart"
+        );
+
+
+    if (
+        !chart
+        ||
+        !allData.length
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    const destinationFilter =
+        document.getElementById(
+            "destinationFilter"
+        );
+
+
+    const previousDestination =
+        destinationFilter
+            ?
+            destinationFilter.value
+            :
+            "ALL";
+
+
+    if (
+        destinationFilter
+        &&
+        !data
+    ) {
+
+
+        destinationFilter.value =
+            "ALL";
+
+
+    }
+
+
+    const chartData =
+        data
+        ||
+        filterDataByCurrentDemographics(
+            filterDataByCurrentODFilters(
+                allData
+            )
+        );
+
+
+    if (
+        destinationFilter
+        &&
+        !data
+    ) {
+
+
+        destinationFilter.value =
+            previousDestination;
+
+
+    }
+
+
+    const destinations =
+        aggregateDestinations(
+            chartData
+        ).sort(
+            (
+                a,
+                b
+            ) =>
+                b.flow_count
+                -
+                a.flow_count
+                ||
+                String(
+                    a.destination
+                ).localeCompare(
+                    String(
+                        b.destination
+                    )
+                )
+        );
+
+
+    const selectedDestination =
+        document.getElementById(
+            "destinationFilter"
+        )?.value ||
+        "ALL";
+
+
+    if (
+        !destinations.length
+    ) {
+
+
+        chart.innerHTML =
+            "<div class='top-destinations-empty'>No destinations found for the current filters.</div>";
+
+
+        return;
+
+
+    }
+
+
+    const maxMentions =
+        Math.max(
+            1,
+            ...destinations.map(
+                destination =>
+                    destination.flow_count
+            )
+        );
+
+
+    chart.innerHTML =
+        destinations.map(
+            destination => {
+
+
+                const percent =
+                    Math.max(
+                        3,
+                        Math.round(
+                            destination.flow_count
+                            /
+                            maxMentions
+                            *
+                            100
+                        )
+                    );
+
+
+                return (
+                    "<div class='top-destination-row"
+                    +
+                    (
+                        selectedDestination ===
+                        destination.destination
+                            ?
+                            " is-selected"
+                            :
+                            ""
+                    )
+                    +
+                    "' data-destination='"
+                    +
+                    escapeAttribute(
+                        destination.destination
+                    )
+                    +
+                    "' title='Filter map to "
+                    +
+                    escapeAttribute(
+                        destination.destination
+                    )
+                    +
+                    "'>"
+                    +
+                    "<div class='top-destination-name' title='"
+                    +
+                    escapeHTML(
+                        destination.destination
+                    )
+                    +
+                    "'>"
+                    +
+                    escapeHTML(
+                        destination.destination
+                    )
+                    +
+                    "</div>"
+                    +
+                    "<div class='top-destination-value'>"
+                    +
+                    destination.flow_count.toLocaleString()
+                    +
+                    "</div>"
+                    +
+                    "<div class='top-destination-bar-track'>"
+                    +
+                    "<div class='top-destination-bar' style='width: "
+                    +
+                    percent
+                    +
+                    "%'></div>"
+                    +
+                    "</div>"
+                    +
+                    "</div>"
+                );
+
+
+            }
+        ).join(
+            ""
+        );
+
+}
+
+
+function updateODSummary(
+    data,
+    county,
+    destination,
+    location = "ALL",
+    destinationRegion = "ALL"
+) {
+
+
+    const stats =
+        getStats(
+            data
+        );
+
+
+    const countyLabel =
+
+        county ===
+        "ALL"
+
+            ?
+            "All Counties"
+
+            :
+            county;
+
+
+    const destinationLabel =
+
+        destination ===
+        "ALL"
+
+            ?
+            "All Destinations"
+
+            :
+            destination;
+
+
+    const destinationRegionLabel =
+
+        destinationRegion ===
+        "INSIDE"
+
+            ?
+            "Inside 13 counties"
+
+            :
+            (
+                destinationRegion ===
+                "OUTSIDE"
+
+                    ?
+                    "Outside 13 counties"
+
+                    :
+                    "All destination regions"
+            );
+
+
+    let locationLabel =
+        "All Locations";
+
+
+    if (
+        location !==
+        "ALL"
+    ) {
+
+
+        const separatorIndex =
+            location.indexOf(
+                ":"
+            );
+
+
+        const locationType =
+            location.slice(
+                0,
+                separatorIndex
+            );
+
+
+        const locationValue =
+            location.slice(
+                separatorIndex
+                +
+                1
+            );
+
+
+        locationLabel =
+            (
+                locationType ===
+                "origin"
+                    ?
+                    "Origin ZIP "
+                    :
+                    "Destination "
+            )
+            +
+            locationValue;
+
+
+    }
+
+
+    document.getElementById(
+        "summary"
+    ).innerHTML =
+
+
+        "<b>Origin–Destination Analysis</b>"
+
+        +
+
+        "<br>"
+
+        +
+
+        "Origin: "
+
+        +
+
+        "<span class='active-od'>"
+
+        +
+
+        countyLabel
+
+        +
+
+        "</span>"
+
+        +
+
+        "<br>"
+
+        +
+
+        "Destination: "
+
+        +
+
+        "<span class='active-od'>"
+
+        +
+
+        destinationLabel
+
+        +
+
+        "</span>"
+
+        +
+
+        "<br>"
+
+        +
+
+        "Destination Region: "
+
+        +
+
+        "<span class='active-od'>"
+
+        +
+
+        destinationRegionLabel
+
+        +
+
+        "</span>"
+
+        +
+
+        "<br>"
+
+        +
+
+        "Location: "
+
+        +
+
+        "<span class='active-od'>"
+
+        +
+
+        locationLabel
+
+        +
+
+        "</span>"
+
+        +
+
+        "<br><br>"
+
+        +
+
+        stats.totalMentions.toLocaleString()
+
+        +
+
+        " survey mentions"
+
+        +
+
+        "<br>"
+
+        +
+
+        stats.zipCount.toLocaleString()
+
+        +
+
+        " origin ZIP codes"
+
+        +
+
+        "<br>"
+
+        +
+
+        stats.destinationCount.toLocaleString()
+
+        +
+
+        " destinations";
+
+}
+
+
+
+// ==========================================================
+// DEMOGRAPHIC SUMMARY
+// ==========================================================
+
+function updateDemographicSummary(
+    data,
+    age,
+    disability,
+    income,
+    race
+) {
+
+
+    const stats =
+        getStats(
+            data
+        );
+
+
+    document.getElementById(
+        "summary"
+    ).innerHTML =
+
+
+        "<b>Demographic Analysis</b>"
+
+        +
+
+        "<br>"
+
+        +
+
+        "Age: "
+
+        +
+
+        "<span class='active-demo'>"
+
+        +
+
+        (
+            age ===
+            "ALL"
+
+                ?
+                "All"
+
+                :
+                age
+        )
+
+        +
+
+        "</span>"
+
+        +
+
+        "<br>"
+
+        +
+
+        "Disability: "
+
+        +
+
+        "<span class='active-demo'>"
+
+        +
+
+        (
+            disability ===
+            "ALL"
+
+                ?
+                "All"
+
+                :
+                disability
+        )
+
+        +
+
+        "</span>"
+
+        +
+
+        "<br>"
+
+        +
+
+        "Income: "
+
+        +
+
+        "<span class='active-demo'>"
+
+        +
+
+        (
+            income ===
+            "ALL"
+
+                ?
+                "All"
+
+                :
+                income
+        )
+
+        +
+
+        "</span>"
+
+        +
+
+        "<br>"
+
+        +
+
+        "Race: "
+
+        +
+
+        "<span class='active-demo'>"
+
+        +
+
+        (
+            race ===
+            "ALL"
+
+                ?
+                "All"
+
+                :
+                race
+        )
+
+        +
+
+        "</span>"
+
+        +
+
+        "<br><br>"
+
+        +
+
+        stats.totalMentions.toLocaleString()
+
+        +
+
+        " survey mentions"
+
+        +
+
+        "<br>"
+
+        +
+
+        stats.zipCount.toLocaleString()
+
+        +
+
+        " origin ZIP codes"
+
+        +
+
+        "<br>"
+
+        +
+
+        stats.destinationCount.toLocaleString()
+
+        +
+
+        " destinations"
+
+        +
+
+        buildDestinationRankingHTML(
+            county,
+            destinationRegion
+        );
+
+}
+
+
+</script>
+
+</body>
+
+</html>

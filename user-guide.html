@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Unreachable Destination OD Flow User Guide</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #11151a;
+            color: #e7ebee;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            background:
+                linear-gradient(
+                    180deg,
+                    #151a20,
+                    #0f1318
+                );
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            margin: 24px 0 8px;
+            color: #ffd78a;
+            font-size: 15px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        p {
+            margin: 0 0 10px;
+            color: #c4ccd3;
+        }
+
+        ul {
+            margin: 8px 0 0;
+            padding-left: 19px;
+            color: #c4ccd3;
+        }
+
+        li {
+            margin-bottom: 7px;
+        }
+
+        strong {
+            color: #ffffff;
+        }
+
+        .note {
+            margin-top: 14px;
+            padding: 12px;
+            background: rgba(255, 176, 35, 0.11);
+            border: 1px solid rgba(255, 176, 35, 0.32);
+            border-radius: 8px;
+            color: #f1d9ad;
+        }
+
+        .term-grid {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .term {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Unreachable Destination OD Flow User Guide</h1>
+    <p>
+        This map summarizes survey-reported unmet transit needs across origin locations,
+        destinations, and origin-destination connections.
+    </p>
+
+    <div class="note">
+        These values are survey mentions of unmet transit needs. They should not be
+        interpreted as observed trips, actual ridership, or measured travel volumes.
+    </div>
+
+    <h2>Key Terms</h2>
+    <div class="term-grid">
+        <div class="term">
+            <strong>Origin</strong><br>
+            Where the transit user lives or starts their trip.
+        </div>
+        <div class="term">
+            <strong>Destination</strong><br>
+            Where the transit user wants to go but does not have an available or adequate transit option.
+        </div>
+        <div class="term">
+            <strong>OD Connection</strong><br>
+            A survey-reported connection from an origin to a desired destination.
+        </div>
+    </div>
+
+    <h2>Map Views</h2>
+    <ul>
+        <li><strong>County Summary</strong> shows survey mentions summarized by origin county.</li>
+        <li><strong>ZIP Summary</strong> shows survey mentions summarized by origin ZIP/ZCTA.</li>
+        <li><strong>Destination Summary</strong> shows destination demand as bubbles.</li>
+        <li><strong>Flowmap</strong> shows OD connections between origins and destinations.</li>
+    </ul>
+
+    <h2>Reading the Flowmap</h2>
+    <ul>
+        <li><strong>Total needs</strong> shows total survey mentions associated with a location.</li>
+        <li><strong>From this location</strong> shows needs starting from that origin location.</li>
+        <li><strong>To this location</strong> shows needs pointing toward that destination.</li>
+        <li><strong>OD connection</strong> lines show reported unmet transit connections.</li>
+        <li>Arrowheads point toward the desired destination.</li>
+    </ul>
+
+    <h2>Filters</h2>
+    <ul>
+        <li>Use <strong>Origin County</strong> to focus on where respondents start.</li>
+        <li>Use <strong>Destination Region</strong> to separate destinations inside or outside the 13-county region.</li>
+        <li>Use <strong>Advanced Demographic Filters</strong> to explore patterns by age, disability, income, or race.</li>
+        <li>Filters update the map and the destination chart.</li>
+    </ul>
+
+    <h2>Top Destinations</h2>
+    <ul>
+        <li>The panel ranks destinations by survey mentions from high to low.</li>
+        <li>Click a destination to filter the map to that destination.</li>
+        <li>Click the same destination again to clear that destination filter.</li>
+    </ul>
+</body>
+</html>
