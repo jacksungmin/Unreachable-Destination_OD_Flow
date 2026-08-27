@@ -406,7 +406,8 @@
         #disabilityFilter:focus,
         #incomeFilter:focus,
         #raceFilter:focus,
-        #viewMode:focus {
+        #viewMode:focus,
+        #mapDimension:focus {
 
             border-color:
                 rgba(
@@ -424,6 +425,119 @@
             background: #1b2025;
 
             color: #e3e7ea;
+
+        }
+
+
+        .map-dimension-control {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr;
+
+            gap: 6px;
+
+        }
+
+
+        .map-dimension-option {
+
+            position: relative;
+
+            display: block;
+
+            margin: 0;
+
+        }
+
+
+        .map-dimension-option input {
+
+            position: absolute;
+
+            opacity: 0;
+
+            pointer-events: none;
+
+        }
+
+
+        .map-dimension-label {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            height: 34px;
+
+            color: #c9d0d6;
+
+            background:
+                rgba(
+                    27,
+                    31,
+                    36,
+                    0.92
+                );
+
+            border:
+                1px solid
+                rgba(
+                    165,
+                    170,
+                    175,
+                    0.20
+                );
+
+            border-radius: 6px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+        }
+
+
+        .map-dimension-option input:focus
+        + .map-dimension-label {
+
+            border-color:
+                rgba(
+                    130,
+                    185,
+                    225,
+                    0.62
+                );
+
+        }
+
+
+        .map-dimension-option input:checked
+        + .map-dimension-label {
+
+            color: #f8f0dc;
+
+            background:
+                rgba(
+                    72,
+                    48,
+                    22,
+                    0.72
+                );
+
+            border-color:
+                rgba(
+                    255,
+                    176,
+                    35,
+                    0.62
+                );
 
         }
 
@@ -1989,6 +2103,57 @@
         </div>
 
 
+        <div class="filter-group">
+
+            <label>
+
+                Map Dimension
+
+            </label>
+
+
+            <div
+                class="map-dimension-control"
+                id="mapDimension"
+                role="radiogroup"
+                aria-label="Map Dimension"
+            >
+
+                <label class="map-dimension-option">
+
+                    <input
+                        type="radio"
+                        name="mapDimension"
+                        value="2d"
+                        checked
+                    >
+
+                    <span class="map-dimension-label">
+                        2D
+                    </span>
+
+                </label>
+
+
+                <label class="map-dimension-option">
+
+                    <input
+                        type="radio"
+                        name="mapDimension"
+                        value="3d"
+                    >
+
+                    <span class="map-dimension-label">
+                        3D
+                    </span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+
         <button
             id="userGuideButton"
             type="button"
@@ -2319,6 +2484,54 @@ let deckgl;
 let currentFilteredData = [];
 
 let currentZoom = 7.2;
+
+let mapIs3D = false;
+
+let hasOpened3DView = false;
+
+const DEFAULT_VIEW_STATE = {
+
+    longitude:
+        -95.37,
+
+    latitude:
+        29.76,
+
+    zoom:
+        7.2,
+
+    pitch:
+        0,
+
+    bearing:
+        0
+
+};
+
+const THREE_D_INITIAL_VIEW_STATE = {
+
+    longitude:
+        -95.30,
+
+    latitude:
+        29.84,
+
+    zoom:
+        7.05,
+
+    pitch:
+        48,
+
+    bearing:
+        0
+
+};
+
+let currentViewState = {
+
+    ...DEFAULT_VIEW_STATE
+
+};
 
 let dataStatusText = "";
 
@@ -3803,6 +4016,29 @@ function initializeODFilters() {
         () => updateMapLayers(
             currentFilteredData
         )
+
+    );
+
+
+    document.querySelectorAll(
+        "input[name='mapDimension']"
+    ).forEach(
+
+        input => {
+
+
+            input.addEventListener(
+
+                "change",
+
+                () => setMapDimension(
+                    input.value ===
+                    "3d"
+                )
+
+            );
+
+        }
 
     );
 
@@ -10015,6 +10251,95 @@ function makeFlowmapLocationSymbolLayers(
 // INITIALIZE MAP
 // ==========================================================
 
+function setMapDimension(
+    shouldUse3D
+) {
+
+
+    mapIs3D =
+        shouldUse3D;
+
+
+    if (
+        shouldUse3D
+        &&
+        !hasOpened3DView
+    ) {
+
+
+        currentViewState = {
+
+            ...THREE_D_INITIAL_VIEW_STATE
+
+        };
+
+
+        hasOpened3DView =
+            true;
+
+
+    }
+
+    else {
+
+
+        currentViewState = {
+
+            ...currentViewState,
+
+            pitch:
+                shouldUse3D
+                    ?
+                    THREE_D_INITIAL_VIEW_STATE.pitch
+                    :
+                    0,
+
+            bearing:
+                shouldUse3D
+                    ?
+                    THREE_D_INITIAL_VIEW_STATE.bearing
+                    :
+                    0
+
+        };
+
+
+    }
+
+
+    if (
+        !deckgl
+    ) {
+
+
+        return;
+
+
+    }
+
+
+    deckgl.setProps({
+
+        viewState:
+            currentViewState,
+
+        controller: {
+
+            dragRotate:
+                shouldUse3D,
+
+            touchRotate:
+                shouldUse3D,
+
+            keyboard:
+                shouldUse3D
+
+        }
+
+    });
+
+}
+
 function initializeMap() {
 
 
@@ -10032,30 +10357,8 @@ function initializeMap() {
                 "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
 
 
-            initialViewState: {
-
-
-                longitude:
-                    -95.37,
-
-
-                latitude:
-                    29.76,
-
-
-                zoom:
-                    7.2,
-
-
-                pitch:
-                    0,
-
-
-                bearing:
-                    0
-
-
-            },
+            viewState:
+                currentViewState,
 
 
             controller: {
@@ -10079,6 +10382,14 @@ function initializeMap() {
                 }) => {
 
 
+                    const nextViewState = {
+
+                        ...currentViewState,
+                        ...viewState
+
+                    };
+
+
                     const nextZoom =
                         viewState
                         &&
@@ -10089,6 +10400,34 @@ function initializeMap() {
                             viewState.zoom
                             :
                             currentZoom;
+
+
+                    if (
+                        !mapIs3D
+                    ) {
+
+
+                        nextViewState.pitch =
+                            0;
+
+
+                        nextViewState.bearing =
+                            0;
+
+
+                    }
+
+
+                    currentViewState =
+                        nextViewState;
+
+
+                    deckgl.setProps({
+
+                        viewState:
+                            currentViewState
+
+                    });
 
 
                     if (
