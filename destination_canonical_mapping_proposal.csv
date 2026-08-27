@@ -1,0 +1,56 @@
+destination,recommended_group,action,notes
+Dallas,Dallas,keep_out_of_region,Valid out-of-region destination.
+Austin,Austin,keep_out_of_region,Valid out-of-region destination.
+San Antonio,San Antonio,keep_out_of_region,Valid out-of-region destination.
+Beaumont,Beaumont,keep_out_of_region,Valid out-of-region destination.
+Brenham,Brenham,keep_out_of_region,Outside 13 counties; keep unless survey scope should exclude it.
+El Paso,El Paso,keep_out_of_region,Valid out-of-region destination.
+Fort Worth,Fort Worth,keep_out_of_region,Valid out-of-region destination.
+Texarkana,Texarkana,keep_out_of_region,Valid out-of-region destination.
+Pelican Island,Galveston,correct_coordinate_and_group,Current coordinate is outside the region; likely should be in Galveston.
+Copperfield,Copperfield,correct_coordinate,Current coordinate appears near College Station area; label suggests NW Harris County.
+Fuqua Street,Fuqua Street,correct_coordinate,Current coordinate appears outside the region; label likely refers to Houston.
+Kirkwood Road,Kirkwood Road,correct_coordinate,Current coordinate appears near San Antonio; label likely refers to Houston.
+Shepherd Drive,Shepherd Drive,correct_coordinate,Current coordinate appears near Georgetown; label likely refers to Houston.
+Westheimer Road,Westheimer Road,correct_coordinate,Current coordinate appears in North Texas; label likely refers to Houston.
+MD Anderson Cancer Center,Texas Medical Center,correct_coordinate_and_group,Current coordinate is in Harris County but not near the expected Texas Medical Center location.
+Greenspoint,Greenspoint,correct_coordinate,Current coordinate appears near central Houston instead of north Houston.
+Garth Road,Garth Road,review_coordinate,Point falls in Chambers County; review if this meant Baytown/Garth Road.
+NRG Stadium,NRG Park,group,Same destination complex.
+Kemah Boardwalk,Kemah,group,Specific attraction within Kemah.
+"The Strand, Galveston",Galveston,group,Specific attraction/district in Galveston.
+Galveston Seawall,Galveston,group,Specific attraction/district in Galveston.
+UTMB,Galveston,optional_group,Use UTMB/Galveston Medical if medical destinations need to remain distinct.
+Moody Gardens,Galveston,optional_group,Use Moody Gardens if attraction-level detail is important.
+Toyota Center,Downtown Houston,group,Specific venue in downtown Houston.
+Minute Maid Park,Downtown Houston,group,Specific venue in downtown Houston.
+Midtown Houston,Downtown Houston,optional_group,Merge only for broad central-Houston summaries.
+Deerbrook Mall,Humble,group,Specific mall in Humble area.
+Hermann Park,Texas Medical Center/Museum District,optional_group,Close to TMC/Museum District; keep separate for park-specific detail.
+Houston Museum District,Texas Medical Center/Museum District,optional_group,Recognized district; keep separate if district detail matters.
+Montrose,Central Houston,optional_group,Keep separate for neighborhood detail.
+Dunlavy Street,Montrose,optional_group,Street-level label; review respondent intent.
+Third Ward,Central Houston,optional_group,Keep separate for neighborhood equity analysis.
+Fifth Ward,Central Houston,optional_group,Keep separate for neighborhood equity analysis.
+Greenway Plaza,Greenway/Upper Kirby,optional_group,Recognized employment district.
+Gulfton,Southwest Houston,optional_group,Keep separate for neighborhood equity analysis.
+Sharpstown,Southwest Houston,optional_group,Keep separate for neighborhood equity analysis.
+Chinatown,Southwest Houston,optional_group,Keep separate for neighborhood/cultural destination detail.
+Richmond,Richmond/Rosenberg,optional_group,Useful combined Fort Bend market.
+Rosenberg,Richmond/Rosenberg,optional_group,Useful combined Fort Bend market.
+Missouri City,Missouri City/Stafford,optional_group,Useful combined Fort Bend/southwest market.
+Stafford,Missouri City/Stafford,optional_group,Useful combined Fort Bend/southwest market.
+University of Houston,University of Houston,do_not_group_with_uhcl,Different campus from UHCL.
+University of Houston-Clear Lake,University of Houston-Clear Lake,do_not_group_with_uh,Different campus from UH main campus.
+NASA Johnson Space Center,NASA Johnson Space Center,keep,Specific recognized destination.
+League City,League City,keep,City-level destination.
+Clear Lake,Clear Lake,keep,Area-level destination.
+Baybrook Mall,Baybrook Mall,keep,Recognized retail destination; optionally group to Clear Lake/Webster.
+Webster,Webster,keep,City-level destination.
+Ellington Airport,Ellington Airport,keep,Specific airport destination.
+William P. Hobby Airport,William P. Hobby Airport,keep,Specific airport destination.
+George Bush Intercontinental Airport,George Bush Intercontinental Airport,keep,Specific airport destination.
+The Galleria,The Galleria,keep,Major distinct activity center.
+Texas Medical Center,Texas Medical Center,keep,Major distinct activity center.
+Downtown Houston,Downtown Houston,keep,Major distinct activity center.
+Galveston,Galveston,keep,Major destination city.
