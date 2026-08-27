@@ -1879,7 +1879,7 @@
 
             <div class="top-destinations-subtitle">
 
-                Survey-reported unmet transit needs by destination
+                Destinations with more than 5 survey mentions
 
             </div>
 
@@ -2323,6 +2323,8 @@ let currentZoom = 7.2;
 let dataStatusText = "";
 
 let selectedMapLocation = null;
+
+const TOP_DESTINATIONS_MIN_MENTIONS = 5;
 
 
 
@@ -11331,6 +11333,11 @@ function updateTopDestinationsChart(
     const destinations =
         aggregateDestinations(
             chartData
+        ).filter(
+            destination =>
+                destination.flow_count
+                >
+                TOP_DESTINATIONS_MIN_MENTIONS
         ).sort(
             (
                 a,
@@ -11363,7 +11370,11 @@ function updateTopDestinationsChart(
 
 
         chart.innerHTML =
-            "<div class='top-destinations-empty'>No destinations found for the current filters.</div>";
+            "<div class='top-destinations-empty'>No destinations with more than "
+            +
+            TOP_DESTINATIONS_MIN_MENTIONS.toLocaleString()
+            +
+            " survey mentions found for the current filters.</div>";
 
 
         return;
